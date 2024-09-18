@@ -45,13 +45,12 @@ module.exports = grammar({
         $._literal,
     ],
 
-    // TODO We probably need to scan for the macro end as in macro shell
-    // expansions, you can still have () inside the shell code.
-    //
-    //externals: ($) => [
-    //    $._macro_start,
-    //    $._macro_end,
-    //],
+    externals: ($) => [
+        $._macro_start,
+        $._macro_expr_start,
+        $._macro_shell_start,
+        $._macro_end,
+    ],
 
     word: ($) => $.identifier,
 
@@ -209,7 +208,11 @@ module.exports = grammar({
         // ...
         //
         macro_expansion: ($) =>
-            seq('%{', optional($._macro_expansion_body), '}'),
+            seq(
+                alias($._macro_start, '%{'),
+                optional($._macro_expansion_body),
+                alias($._macro_end, '}')
+            ),
 
         _macro_expansion_body: ($) =>
             choice(
@@ -254,7 +257,7 @@ module.exports = grammar({
                                 choice(
                                     $.macro_simple_expansion,
                                     $.macro_expansion,
-                                    $.text
+                                    $.string
                                 )
                             )
                         )
@@ -324,27 +327,28 @@ module.exports = grammar({
         _macro_argument_list: ($) => sep1($.concatenation, BLANK),
 
         //// Macro Expression: %[<expression>]
-        //macro_expression: ($) => seq('%[', $.expression, ']'),
+        macro_expression: ($) =>
+            seq(
+                alias($._macro_expr_start, '%['),
+                $.expression,
+                alias($._macro_end, ']')
+            ),
 
-        // TODO: macro_shell_expansion needs to be implemented in an
-        // external scanner.
-        // Inside the $(...) are also () allowed, so you need to count them to
-        // detect the last one.
+        //// Macro Shell Expansion
+        //
         // %(...)
+        //
         macro_shell_expansion: ($) =>
-            choice(
-                seq('%(', ')'),
-                seq(
-                    '%(',
-                    repeat1(
-                        choice(
-                            prec(1, $.macro_expansion),
-                            $.quoted_string,
-                            $.string
-                        )
-                    ),
-                    ')'
-                )
+            seq(
+                alias($._macro_shell_start, '%('),
+                repeat(
+                    choice(
+                        prec(1, $.macro_expansion),
+                        $.quoted_string,
+                        $.string
+                    )
+                ),
+                alias($._macro_end, ')')
             ),
 
         ///////////////////////////////////////////////////////////////////////
