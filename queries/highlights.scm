@@ -1,15 +1,73 @@
 (identifier) @variable
 
 [
-  "%define"
-  "%global"
+  "define"
+  "global"
 ] @keyword.directive.define
 
-(macro_function_definition
-  name: (identifier) @function)
+[
+  "P"
+  "S"
+  "basename"
+  "dirname"
+  "dnl"
+  "dump"
+  "echo"
+  "error"
+  "exists"
+  "expand"
+  "expr"
+  "getdirconf"
+  "getenv"
+  "getncpus"
+  "gsub"
+  "len"
+  "load"
+  "lower"
+  "lua"
+  "macrobody"
+  "quote"
+  "rep"
+  "reverse"
+  "rpmversion"
+  "shrink"
+  "sub"
+  "suffix"
+  "trace"
+  "u2p"
+  "shescape"
+  "uncompress"
+  "undefine"
+  "upper"
+  "url2path"
+  "verbose"
+  "warn"
+] @function.builtin
 
-(macro_invocation) @keyword.function
-(macro_expansion) @keyword
+(macro_invocation
+  "%" @punctuation.special
+) @none
+
+(macro_invocation
+  macro: (identifier) @function.macro)
+
+(macro_invocation
+  macro: (macro_builtin) @function.builtin)
+
+(macro_expansion
+  "%" @punctuation.special
+  "{" @punctuation.special
+  "}" @punctuation.special) @none
+
+(macro_expansion
+  "%" @punctuation.special) @none
+
+(macro_ternary
+  "%{" @punctuation.special
+  (not_operator) @operator
+  (defined_operator) @operator
+  ":" @operator
+  "}" @punctuation.special)
 
 [
   (tag)

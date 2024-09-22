@@ -113,7 +113,7 @@ Macros (Usage/No Braces)
 
 (spec
   (macro_expansion
-    (identifier)))
+    (macro_builtin)))
 
 ===============================================================================
 Macros (Usage/Braces)
@@ -125,7 +125,7 @@ Macros (Usage/Braces)
 
 (spec
   (macro_expansion
-    (identifier)))
+    (macro_builtin)))
 
 ===============================================================================
 Macros (Shell Expansion)

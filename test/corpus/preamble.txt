@@ -91,7 +91,8 @@ Release:        1%{?dist}
       (integer_expansion
         (integer)
         (macro_expansion
-          (identifier))))))
+          (macro_ternary
+            (identifier)))))))
 
 ===============================================================================
 Preamble Section (Summary/String)

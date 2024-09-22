@@ -1,8 +1,10 @@
 %global pkgname example
 
+%{!?foo:%define bar x}
+
 Name:           example
 Version:        1.0.0
-Release:        %autorelease
+Release:        %{autorelease}
 Summary:        An example
 
 License:        CC-0
@@ -20,7 +22,6 @@ An example spec file
 
 %prep
 %autosetup -p1
-
 
 %build
 %configure \

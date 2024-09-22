@@ -142,13 +142,15 @@ BuildRequires:  foo
         (integer_expansion
           (integer)
           (macro_expansion
-            (identifier)))
+            (macro_ternary
+              (identifier))))
         (integer))
       (comparison_operator
         (integer_expansion
           (integer)
           (macro_expansion
-            (identifier)))
+            (macro_ternary
+              (identifier))))
         (integer)))
     (preamble
       (tags
@@ -171,7 +173,8 @@ BuildRequires:  foo
     (integer_expansion
       (integer)
       (macro_expansion
-        (identifier)))
+         (macro_ternary
+           (identifier))))
     (preamble
       (tags
         (dependency_tag)
@@ -195,12 +198,14 @@ BuildRequires:  foo
         (integer_expansion
           (integer)
           (macro_expansion
-            (identifier)))
+            (macro_ternary
+              (identifier))))
         (comparison_operator
           (integer_expansion
             (integer)
             (macro_expansion
-              (identifier)))
+              (macro_ternary
+                (identifier))))
           (integer))))
     (preamble
       (tags
@@ -225,7 +230,8 @@ BuildRequires:  bar
     (integer_expansion
       (integer)
       (macro_expansion
-        (identifier)))
+        (macro_ternary
+          (identifier))))
     (preamble
       (tags
         (dependency_tag)
@@ -255,7 +261,8 @@ BuildRequires:  bar
     (integer_expansion
       (integer)
       (macro_expansion
-        (identifier)))
+        (macro_ternary
+          (identifier))))
     (preamble
       (tags
         (dependency_tag)
@@ -265,7 +272,8 @@ BuildRequires:  bar
       (integer_expansion
         (integer)
         (macro_expansion
-          (identifier)))
+          (macro_ternary
+            (identifier))))
       (preamble
         (tags
           (dependency_tag)
@@ -291,7 +299,8 @@ BuildRequires:  wurst
     (integer_expansion
       (integer)
       (macro_expansion
-        (identifier)))
+        (macro_ternary
+          (identifier))))
     (preamble
       (tags
         (dependency_tag)
@@ -301,7 +310,8 @@ BuildRequires:  wurst
       (integer_expansion
         (integer)
         (macro_expansion
-          (identifier)))
+          (macro_ternary
+            (identifier))))
       (preamble
         (tags
           (dependency_tag)
@@ -341,7 +351,8 @@ Conditionals (Nested %if with %elif and %else)
     (integer_expansion
       (integer)
       (macro_expansion
-        (identifier)))
+        (macro_ternary
+          (identifier))))
     (ifarch_statement
       (arch
         (identifier))
