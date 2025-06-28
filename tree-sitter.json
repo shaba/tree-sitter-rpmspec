@@ -1,0 +1,40 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "rpmspec",
+      "camelcase": "RPMSpec",
+      "title": "RPMSpec",
+      "scope": "source.rpmspec",
+      "file-types": [
+        "spec"
+      ],
+      "injection-regex": "^rpmspec$",
+      "class-name": "TreeSitterRpmspec"
+    }
+  ],
+  "metadata": {
+    "version": "0.0.1",
+    "license": "MIT",
+    "description": "RPMSpec grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Andreas Schneider",
+        "email": "asn@cryptomilk.org",
+        "url": "https://cryptomilk.org/"
+      }
+    ],
+    "links": {
+      "repository": "https://gitlab.com/cryptomilk/tree-sitter-rpmspec"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
