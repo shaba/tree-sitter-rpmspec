@@ -1,137 +1,214 @@
 /**
  * @file Tree-sitter grammar definition for RPM spec files
+ *
+ * This grammar parses RPM spec files according to the RPM specification.
+ * RPM spec files contain metadata and instructions for building RPM packages,
+ * including dependencies, build scripts, and file listings.
+ *
  * @author Andreas Schneider
  * @author Omair Majid
  * @license MIT
- * @see {@link https://rpm-software-management.github.io/rpm/manual/spec.html|spec syntax documentation}
+ * @see {@link https://rpm-software-management.github.io/rpm/manual/spec.html|RPM spec syntax documentation}
+ * @see {@link https://docs.fedoraproject.org/en-US/packaging-guidelines/|Fedora packaging guidelines}
+ * @see {@link https://rpm-packaging-guide.github.io/|RPM packaging guide}
  */
 
+/**
+ * Precedence constants for expression parsing
+ *
+ * These values define the operator precedence in macro expressions.
+ * Higher numbers indicate higher precedence (tighter binding).
+ * Based on standard mathematical and logical operator precedence.
+ */
 const PREC = {
-    parenthesized_expression: 1,
+    parenthesized_expression: 1, // Lowest precedence for parentheses
 
-    or: 10,
-    and: 11,
-    not: 12,
-    compare: 13,
-    plus: 14,
-    times: 15,
+    // Logical operators (lower precedence)
+    or: 10, // ||, or
+    and: 11, // &&, and
+    not: 12, // !
+
+    // Comparison operators
+    compare: 13, // <, <=, ==, !=, >=, >
+
+    // Arithmetic operators (higher precedence)
+    plus: 14, // +, -
+    times: 15, // *, /
 };
 
-const NEWLINE = /\r?\n/;
-const ANYTHING = /[^\r\n]*/;
-const BLANK = /( |\t)+/;
+/**
+ * Common regex patterns used throughout the grammar
+ */
+const NEWLINE = /\r?\n/; // Cross-platform newline (Unix/Windows)
+const ANYTHING = /[^\r\n]*/; // Any character except newlines
+const BLANK = /( |\t)+/; // One or more spaces or tabs
 
-/* https://rpm-software-management.github.io/rpm/manual/spec.html */
+/**
+ * Main grammar definition for RPM spec files
+ *
+ * The grammar is structured to handle the complex nature of RPM spec files,
+ * which combine structured metadata (preamble) with shell scripts and
+ * sophisticated macro expansion capabilities.
+ *
+ * @see {@link https://rpm-software-management.github.io/rpm/manual/spec.html|RPM spec file format}
+ */
 module.exports = grammar({
     name: 'rpmspec',
 
-    // FIXME Is there a better way?
+    // Grammar conflicts resolution
+    // The macro_call vs string conflict occurs because macro calls can appear
+    // in contexts where strings are also valid, requiring parser lookahead
     conflicts: ($) => [[$.macro_call, $.string]],
 
-    // Array of tokens that may appear anywhere in the language.
-    extras: ($) => [$.comment, /\s+/, /\\( |\t|\v|\f)/, $.line_continuation],
+    // Tokens that may appear anywhere in the language and are typically ignored
+    // during parsing (whitespace, comments, line continuations)
+    extras: ($) => [
+        $.comment, // # comments and %dnl comments
+        /\s+/, // All whitespace characters
+        /\\( |\t|\v|\f)/, // Escaped whitespace characters
+        $.line_continuation, // Backslash line continuations
+    ],
 
+    // Supertypes define abstract syntax tree node categories
+    // These help with syntax highlighting and semantic analysis
     supertypes: ($) => [
-        $._simple_statements,
-        $._compound_statements,
-        $.expression,
-        $._primary_expression,
+        $._simple_statements, // Single-line statements (tags, macros, etc.)
+        $._compound_statements, // Multi-line blocks (if/else, sections)
+        $.expression, // Mathematical and logical expressions
+        $._primary_expression, // Basic expression components
     ],
 
+    // Inline rules are flattened in the parse tree to reduce nesting
+    // This improves the tree structure for syntax highlighting and analysis
     inline: ($) => [
-        $._simple_statements,
-        $._compound_statements,
-        $._conditional_block,
-        $._literal,
+        $._simple_statements, // Flatten statement types
+        $._compound_statements, // Flatten compound statement types
+        $._conditional_block, // Flatten conditional block contents
+        $._literal, // Flatten literal value types
     ],
 
-    // TODO We probably need to scan for the macro end as in macro shell
-    // expansions, you can still have () inside the shell code.
-    //
-    //externals: ($) => [
-    //    $._macro_start,
-    //    $._macro_end,
-    //],
-
+    // Default token type for unrecognized words
     word: ($) => $.identifier,
 
     rules: {
+        // Root rule: An RPM spec file is a sequence of statements
         spec: ($) => repeat($._statements),
 
+        // Top-level statements in spec files
         _statements: ($) =>
             choice($._simple_statements, $._compound_statements),
 
+        // Simple statements: single-line directives and sections
         _simple_statements: ($) =>
             choice(
-                $.macro_definition,
-                $.macro_undefinition,
-                $.macro_call,
-                $.macro_expansion,
-                $.preamble,
-                $.description,
-                $.package,
-                $.prep_scriptlet,
-                $.generate_buildrequires,
-                $.conf_scriptlet,
-                $.build_scriptlet,
-                $.install_scriptlet,
-                $.check_scriptlet,
-                $.clean_scriptlet,
-                $.runtime_scriptlet,
-                $.trigger,
-                $.file_trigger,
-                $.files,
-                $.changelog
+                $.macro_definition, // %define, %global
+                $.macro_undefinition, // %undefine
+                $.macro_call, // %setup, %patch, etc.
+                $.macro_expansion, // %{name}, %name
+                $.preamble, // Name:, Version:, etc.
+                $.description, // %description section
+                $.package, // %package subsection
+                $.prep_scriptlet, // %prep section
+                $.generate_buildrequires, // %generate_buildrequires section
+                $.conf_scriptlet, // %conf section
+                $.build_scriptlet, // %build section
+                $.install_scriptlet, // %install section
+                $.check_scriptlet, // %check section
+                $.clean_scriptlet, // %clean section
+                $.runtime_scriptlet, // %pre, %post, etc.
+                $.trigger, // %triggerin, %triggerun, etc.
+                $.file_trigger, // %filetriggerin, etc.
+                $.files, // %files section
+                $.changelog // %changelog section
             ),
 
+        // Comments: traditional # comments and %dnl (do not list) comments
         comment: ($) =>
-            token(choice(seq('#', ANYTHING), seq('%dnl ', ANYTHING))),
+            token(
+                choice(
+                    seq('#', ANYTHING), // Shell-style comments
+                    seq('%dnl ', ANYTHING) // RPM "do not list" comments
+                )
+            ),
 
+        // Line continuation: backslash at end of line
         line_continuation: (_) =>
-            token(seq('\\', choice(seq(optional('\r'), '\n'), '\0'))),
+            token(
+                seq(
+                    '\\',
+                    choice(
+                        seq(optional('\r'), '\n'), // Backslash-newline
+                        '\0' // Backslash-null (rare)
+                    )
+                )
+            ),
 
         identifier: (_) =>
             /(\p{XID_Start}|\$|_|\\u[0-9A-Fa-f]{4}|\\U[0-9A-Fa-f]{8})(\p{XID_Continue}|\$|\\u[0-9A-Fa-f]{4}|\\U[0-9A-Fa-f]{8})*/,
 
         ///////////////////////////////////////////////////////////////////////
-        // Literals
+        // LITERALS AND PRIMARY EXPRESSIONS
+        //
+        // This section defines the basic building blocks of RPM spec syntax:
+        // - String literals (quoted and unquoted)
+        // - Numeric literals (integers, floats, version numbers)
+        // - Macro expansions (simple and complex forms)
+        // - Parenthesized expressions for precedence control
         ///////////////////////////////////////////////////////////////////////
 
+        // Literal values: either concatenated expressions or primary expressions
         _literal: ($) => choice($.concatenation, $._primary_expression),
 
+        // Primary expressions: the basic atomic values in RPM specs
+        // Precedence 1 ensures these bind tightly in larger expressions
         _primary_expression: ($) =>
             prec(
                 1,
                 choice(
-                    $.word,
-                    $.quoted_string,
-                    $.integer,
-                    $.float,
-                    $.version,
-                    $.parenthesized_expression,
-                    $.macro_simple_expansion,
-                    $.macro_expansion,
-                    $.macro_integer_expansion,
-                    $.macro_shell_expansion
+                    $.word, // Unquoted words
+                    $.quoted_string, // "quoted strings"
+                    $.integer, // 123, 0x1a
+                    $.float, // 1.23
+                    $.version, // 1.2.3-beta
+                    $.parenthesized_expression, // (expr)
+                    $.macro_simple_expansion, // %name
+                    $.macro_expansion, // %{name}
+                    $.macro_integer_expansion, // 0%{?dist}
+                    $.macro_shell_expansion // %(shell command)
                 )
             ),
 
-        // 0%{?<name>}
-        // TODO FIXME Can we integrate this in macro_(simple_)expansion??
+        // Macro integer expansion: integer followed by macro expansion
+        // Common pattern: 0%{?dist} (adds .el8, .fc35, etc. to package names)
+        // TODO: Consider integrating this into general macro expansion rules
         macro_integer_expansion: ($) =>
             seq($.integer, choice($.macro_simple_expansion, $.macro_expansion)),
 
         ///////////////////////////////////////////////////////////////////////
-        // Macros
+        // MACRO SYSTEM
+        // RPM's macro system is a powerful text substitution mechanism that
+        // allows for:
+        // - Variable definitions and expansions (%define, %global)
+        // - Conditional text inclusion (%{?macro:text})
+        // - Shell command execution (%(command))
+        // - Built-in utility macros (%basename, %dirname, etc.)
+        // - Architecture and OS conditionals (%ifarch, %ifos)
+        //
+        // Macro syntax forms:
+        // - Simple: %name
+        // - Complex: %{name}, %{name:default}, %{name arg1 arg2}
+        // - Conditional: %{?name:value}, %{!?name:value}
+        // - Shell: %(shell command)
         ///////////////////////////////////////////////////////////////////////
 
+        // Macro names: alphanumeric identifiers starting with letter or underscore
         macro_name: (_) => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-        //// Simple Macro Expansion
+        //// Simple Macro Expansion: %name
         //
-        // %<name>
-        //
-        // TODO Support %-f ?
+        // The simplest form of macro expansion, directly substituting %name with its value
+        // Supports optional negation operator (!) and special variables
+        // TODO: Add support for %-f format specifiers
         macro_simple_expansion: ($) =>
             seq(
                 '%',
@@ -148,14 +225,17 @@ module.exports = grammar({
                 )
             ),
 
-        // %*, %**, %#, %<num>
+        // Special macro variables for RPM scriptlets and build context
+        // %* - all arguments, %** - all arguments quoted, %# - argument count
+        // %0, %1, %2... - positional arguments, %nil - empty value
         _special_macro_name: ($) =>
             alias(
                 choice('*', '**', '#', /[0-9]+/, 'nil'),
                 $.special_variable_name
             ),
 
-        // Builtin macro names
+        // Built-in RPM macros providing utility functions and system information
+        // These are predefined macros available in all RPM builds
         macro_builtin: ($) =>
             choice(
                 $.macro_source,
@@ -203,11 +283,12 @@ module.exports = grammar({
 
         macro_undefine: ($) => 'undefine',
 
-        //// Macro Expansion
+        //// Complex Macro Expansion: %{name}
         //
-        // %{<name>}
-        // ...
-        //
+        // Advanced macro expansion supporting:
+        // - Default values: %{name:default}
+        // - Arguments: %{name arg1 arg2}
+        // - Conditional expansion: %{?name:value}
         macro_expansion: ($) =>
             seq('%{', optional($._macro_expansion_body), '}'),
 
@@ -232,13 +313,13 @@ module.exports = grammar({
                 $.conditional_expansion
             ),
 
-        //// Conditionally Expanded Macros
+        //// Conditional Macro Expansion
         //
-        // %{?macro_name:value}
-        // %{!?macro_name:value}
-        // %{?macro_name}
-        // %{!?macro_name}
-        //
+        // Allows conditional text inclusion based on macro definition:
+        // - %{?macro_name:value} - include 'value' if macro_name is defined
+        // - %{!?macro_name:value} - include 'value' if macro_name is NOT defined
+        // - %{?macro_name} - expand to macro_name's value if defined
+        // - %{!?macro_name} - expand to macro_name's value if NOT defined
         conditional_expansion: ($) =>
             prec.left(
                 1,
@@ -355,14 +436,39 @@ module.exports = grammar({
             ),
 
         ///////////////////////////////////////////////////////////////////////
-        // Conditionals (%if, %ifarch, %ifos)
+        // CONDITIONAL COMPILATION DIRECTIVES
+        //
+        // RPM supports conditional compilation based on:
+        // - %if/%elif/%else/%endif: Expression-based conditions
+        // - %ifarch/%ifnarch: Architecture-specific conditions
+        // - %ifos/%ifnos: Operating system-specific conditions
+        //
+        // These directives allow spec files to adapt to different build
+        // environments, architectures, and distributions.
+        //
+        // Examples:
+        //   %if 0%{?fedora} >= 35
+        //   %ifarch x86_64 aarch64
+        //   %ifos linux
         ///////////////////////////////////////////////////////////////////////
 
-        _compound_statements: ($) =>
-            choice($.if_statement, $.ifarch_statement, $.ifos_statement),
+        // Expression operators for conditional statements
+        // These implement standard mathematical and logical operations
+        // used in %if expressions
 
+        // Compound statements: multi-line conditional blocks
+        _compound_statements: ($) =>
+            choice(
+                $.if_statement, // %if/%elif/%else/%endif
+                $.ifarch_statement, // %ifarch/%ifnarch/%endif
+                $.ifos_statement // %ifos/%ifnos/%endif
+            ),
+
+        // Boolean operators: logical AND and OR with proper precedence
+        // Supports both symbolic (&&, ||) and word forms (and, or)
         boolean_operator: ($) =>
             choice(
+                // Logical AND: higher precedence than OR
                 prec.left(
                     PREC.and,
                     seq(
@@ -371,6 +477,7 @@ module.exports = grammar({
                         field('right', $.expression)
                     )
                 ),
+                // Logical OR: lower precedence than AND
                 prec.left(
                     PREC.or,
                     seq(
@@ -381,15 +488,20 @@ module.exports = grammar({
                 )
             ),
 
+        // Logical NOT operator: negates boolean expressions
+        // Has high precedence to bind tightly to its operand
         not_operator: ($) =>
             prec(PREC.not, seq('!', field('argument', $.expression))),
 
+        // Arithmetic operators: standard mathematical operations
+        // Implements proper precedence: *, / before +, -
+        // All operators are left-associative
         arithmetic_operator: ($) => {
             const table = [
-                [prec.left, '+', PREC.plus],
-                [prec.left, '-', PREC.plus],
-                [prec.left, '*', PREC.times],
-                [prec.left, '/', PREC.times],
+                [prec.left, '+', PREC.plus], // Addition
+                [prec.left, '-', PREC.plus], // Subtraction
+                [prec.left, '*', PREC.times], // Multiplication
+                [prec.left, '/', PREC.times], // Division
             ];
 
             return choice(
@@ -406,6 +518,9 @@ module.exports = grammar({
             );
         },
 
+        // Comparison operators: relational comparisons between values
+        // Supports chaining: a < b <= c is parsed as (a < b) && (b <= c)
+        // Common in RPM for version comparisons: %{version} >= 1.2.0
         comparison_operator: ($) =>
             prec.left(
                 PREC.compare,
@@ -415,7 +530,14 @@ module.exports = grammar({
                         seq(
                             field(
                                 'operators',
-                                choice('<', '<=', '==', '!=', '>=', '>')
+                                choice(
+                                    '<', // Less than
+                                    '<=', // Less than or equal
+                                    '==', // Equal
+                                    '!=', // Not equal
+                                    '>=', // Greater than or equal
+                                    '>' // Greater than
+                                )
                             ),
                             $._primary_expression
                         )
@@ -423,6 +545,10 @@ module.exports = grammar({
                 )
             ),
 
+        // With/without operators: test for optional features
+        // %{with feature} - true if --with-feature was passed to rpmbuild
+        // %{without feature} - true if --without-feature was passed to rpmbuild
+        // Used for conditional compilation of optional features
         with_operator: ($) =>
             seq(
                 '%{',
@@ -431,6 +557,10 @@ module.exports = grammar({
                 '}'
             ),
 
+        // Defined/undefined operators: test macro definition status
+        // %{defined macro} - true if macro is defined
+        // %{undefined macro} - true if macro is not defined
+        // Alternative to %{?macro} syntax for conditional compilation
         defined_operator: ($) =>
             seq(
                 '%{',
@@ -439,18 +569,22 @@ module.exports = grammar({
                 '}'
             ),
 
+        // Parenthesized expressions: override operator precedence
+        // Lowest precedence to ensure parentheses bind loosely
         parenthesized_expression: ($) =>
             prec(PREC.parenthesized_expression, seq('(', $.expression, ')')),
 
+        // Expression: all possible expression types in conditional statements
+        // Combines arithmetic, logical, comparison, and RPM-specific operators
         expression: ($) =>
             choice(
-                $.arithmetic_operator,
-                $.comparison_operator,
-                $.not_operator,
-                $.boolean_operator,
-                $.with_operator,
-                $.defined_operator,
-                $._primary_expression
+                $.arithmetic_operator, // +, -, *, /
+                $.comparison_operator, // <, <=, ==, !=, >=, >
+                $.not_operator, // !
+                $.boolean_operator, // &&, ||, and, or
+                $.with_operator, // %{with feature}
+                $.defined_operator, // %{defined macro}
+                $._primary_expression // literals, macros, etc.
             ),
 
         _conditional_block: ($) =>
@@ -538,93 +672,139 @@ module.exports = grammar({
             ),
 
         ///////////////////////////////////////////////////////////////////////
-        // Preamble Section (Name, Version, Release, ...)
+        // PREAMBLE SECTION - PACKAGE METADATA
+        //
+        // The preamble contains essential package metadata that describes:
+        // - Package identity: Name, Version, Release, Epoch
+        // - Dependencies: Requires, BuildRequires, Provides, Conflicts
+        // - Descriptive info: Summary, License, URL, Packager
+        // - Build configuration: BuildArch, BuildRoot, Source, Patch
+        //
+        // Format: "Tag: value" where tag is case-insensitive
+        // Some tags support qualifiers: "Requires(post): package"
+        //
+        // Examples:
+        //   Name: tree-sitter-rpmspec
+        //   Version: 1.0.0
+        //   BuildRequires: cmake >= 3.10
+        //   Requires(post): systemd
         ///////////////////////////////////////////////////////////////////////
 
+        // Basic package metadata and dependencies
+
+        // Preamble: wrapper for tag-value pairs in the package header
         preamble: ($) => seq($.tags),
 
-        // Name:   tree-sitter-rpmspec
-        // Requires(pre): tree-sitter
-        // Summary: A parser generator Tool
+        // Tag-value pairs: the fundamental structure of RPM preamble
+        // Format: "Tag: value" or "Tag(qualifier): value"
+        // Examples:
+        //   Name: tree-sitter-rpmspec
+        //   Requires(pre): tree-sitter
+        //   Summary: A parser generator tool
         tags: ($) =>
             seq(
-                choice($.tag, $.dependency_tag),
-                token.immediate(/:( |\t)*/),
-                field('value', $._literal),
-                token.immediate(NEWLINE)
+                choice($.tag, $.dependency_tag), // Tag name (with optional qualifier)
+                token.immediate(/:( |\t)*/), // Colon separator with optional whitespace
+                field('value', $._literal), // Tag value (can contain macros)
+                token.immediate(NEWLINE) // Must end with newline
             ),
 
+        // Standard RPM tags: core package metadata fields
+        // These are the fundamental tags recognized by RPM
         tag: ($) =>
             choice(
-                'AutoProv',
-                'AutoReq',
-                'AutoReqProv',
-                'BugUrl',
-                'BuildRoot',
-                'BuildSystem',
-                'DistTag',
-                'Distribution',
-                'Epoch',
-                'Group',
-                'License',
-                'ModularityLabel',
-                'Name',
-                'NoPatch',
-                'NoSource',
-                'Packager',
-                'Release',
-                'SourceLicense',
-                'Summary',
-                'URL',
-                'Url',
-                'VCS',
-                'Vendor',
-                'Version',
-                /Patch\d*/,
-                /Source\d*/
+                // Automatic dependency generation control
+                'AutoProv', // Enable/disable automatic Provides generation
+                'AutoReq', // Enable/disable automatic Requires generation
+                'AutoReqProv', // Enable/disable both AutoReq and AutoProv
+
+                // Package identity and versioning
+                'Name', // Package name (required)
+                'Version', // Package version (required)
+                'Release', // Package release number (required)
+                'Epoch', // Version epoch for upgrade ordering
+
+                // Descriptive metadata
+                'Summary', // One-line package description (required)
+                'License', // Package license (required)
+                'URL', // Project homepage URL
+                'Url', // Alternative spelling of URL
+                'BugUrl', // Bug reporting URL
+                'Packager', // Person/organization who packaged it
+                'Vendor', // Vendor/distributor information
+                'Group', // Package category (deprecated)
+
+                // Build and distribution metadata
+                'BuildRoot', // Build root directory (deprecated)
+                'BuildSystem', // Build system identifier
+                'Distribution', // Target distribution
+                'DistTag', // Distribution tag
+                'ModularityLabel', // Modularity metadata
+                'VCS', // Version control system info
+                'SourceLicense', // License for source code
+
+                // Source and patch control
+                'NoPatch', // Disable specific patches
+                'NoSource', // Exclude sources from SRPM
+                /Patch\d*/, // Patch files: Patch0, Patch1, etc.
+                /Source\d*/ // Source files: Source0, Source1, etc.
             ),
 
-        // Dependencies:
-        // Requires(pre): tree-sitter
+        // Dependency qualifiers: specify when dependencies are needed
+        // Used with Requires tag to indicate timing of dependency check
+        // Example: Requires(post): systemd
         qualifier: ($) =>
             choice(
-                'pre',
-                'post',
-                'preun',
-                'postun',
-                'pretrans',
-                'posttrans',
-                'verify',
-                'interp',
-                'meta'
+                'pre', // Before package installation
+                'post', // After package installation
+                'preun', // Before package removal
+                'postun', // After package removal
+                'pretrans', // Before transaction (all packages)
+                'posttrans', // After transaction (all packages)
+                'verify', // During package verification
+                'interp', // Script interpreter dependency
+                'meta' // Meta-dependency (not runtime)
             ),
 
-        // BuildRequires: tree-sitter-cli
+        // Dependency and architecture tags: define package relationships
+        // These tags specify dependencies, conflicts, and build constraints
         dependency_tag: ($) =>
             choice(
+                // Runtime dependencies (with optional qualifier)
                 seq('Requires', optional(seq('(', $.qualifier, ')'))),
-                'BuildArch',
-                'BuildArchitectures',
-                'BuildConflicts',
-                'BuildPrereq',
-                'BuildRequires',
-                'Conflicts',
-                'DocDir',
-                'Enhances',
-                'ExcludeArch',
-                'ExcludeOS',
-                'ExclusiveArch',
-                'ExclusiveOS',
-                'Obsoletes',
-                'OrderWithRequires',
-                'Prefix',
-                'Prefixes',
-                'Prereq',
-                'Provides',
-                'Recommends',
-                'RemovePathPostfixes',
-                'Suggests',
-                'Supplements'
+
+                // Build-time dependencies and constraints
+                'BuildRequires', // Packages needed to build this package
+                'BuildConflicts', // Packages that conflict during build
+                'BuildPrereq', // Build prerequisites (deprecated)
+
+                // Architecture specifications
+                'BuildArch', // Target architecture for build
+                'BuildArchitectures', // Multiple target architectures
+                'ExcludeArch', // Architectures to exclude
+                'ExclusiveArch', // Only build on these architectures
+                'ExcludeOS', // Operating systems to exclude
+                'ExclusiveOS', // Only build on these operating systems
+
+                // Package relationships
+                'Provides', // Virtual packages this provides
+                'Conflicts', // Packages this conflicts with
+                'Obsoletes', // Packages this makes obsolete
+                'Requires', // Runtime dependencies
+                'Prereq', // Prerequisites (deprecated)
+                'OrderWithRequires', // Ordering dependency
+
+                // Weak dependencies (suggestions)
+                'Recommends', // Recommended packages
+                'Suggests', // Suggested packages
+                'Supplements', // Supplement other packages
+                'Enhances', // Enhance other packages
+
+                // Installation and documentation
+                'DocDir', // Documentation directory
+                'Prefix', // Installation prefix
+                'Prefixes', // Multiple installation prefixes
+                'RemovePathPostfixes' // Path postfixes to remove
             ),
 
         ///////////////////////////////////////////////////////////////////////
@@ -659,31 +839,63 @@ module.exports = grammar({
             ),
 
         ///////////////////////////////////////////////////////////////////////
-        // Build scriptlets (%prep, %build, %install, ...)
+        // BUILD SCRIPTLETS - SHELL SCRIPT SECTIONS
+        //
+        // RPM build process is divided into several scriptlet phases:
+        // - %prep: Prepare source code (extract, patch)
+        // - %generate_buildrequires: Dynamically determine build dependencies
+        // - %conf: Configure the build (deprecated, use %build)
+        // - %build: Compile the software
+        // - %install: Install into build root
+        // - %check: Run test suite
+        // - %clean: Clean up build artifacts (deprecated)
+        //
+        // Each scriptlet contains shell commands executed during that phase.
+        // Common macros like %setup, %patch, %make_build are often used.
+        //
+        // Example:
+        //   %prep
+        //   %setup -q
+        //   %patch0 -p1
+        //
+        //   %build
+        //   %configure
+        //   %make_build
         ///////////////////////////////////////////////////////////////////////
 
+        // Shell script content within scriptlet sections
+
+        // Shell block: executable shell script content in scriptlets
+        // Can contain shell commands, macro expansions, and conditional blocks
+        // Right precedence allows greedy matching of script content
         shell_block: ($) =>
             prec.right(
                 repeat1(
                     choice(
-                        $._compound_statements,
-                        prec(1, $.macro_expansion),
-                        $.macro_definition,
-                        $.macro_undefinition,
-                        $.macro_call,
-                        $.string
+                        $._compound_statements, // Conditional blocks (%if, %ifarch)
+                        prec(1, $.macro_expansion), // Macro expansions %{...}
+                        $.macro_definition, // Inline %define statements
+                        $.macro_undefinition, // Inline %undefine statements
+                        $.macro_call, // Macro calls like %setup, %patch
+                        $.string // Raw shell command text
                     )
                 )
             ),
 
+        // %prep scriptlet: prepare source code for building
+        // Typically contains %setup (extract sources) and %patch (apply patches)
+        // First scriptlet executed in build process
         prep_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%prep', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Shell commands for source preparation
                 )
             ),
 
+        // %generate_buildrequires scriptlet: dynamically determine build dependencies
+        // Executes before main build, outputs additional BuildRequires to stdout
+        // Used for language-specific dependency resolution (pip, npm, etc.)
         generate_buildrequires: ($) =>
             prec.right(
                 seq(
@@ -691,71 +903,115 @@ module.exports = grammar({
                         token(seq('%generate_buildrequires', NEWLINE)),
                         $.section_name
                     ),
-                    optional($.shell_block)
+                    optional($.shell_block) // Commands to determine dependencies
                 )
             ),
 
+        // %conf scriptlet: configure build environment (deprecated)
+        // Historically used for autotools configuration
+        // Modern specs typically use %build for configuration
         conf_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%conf', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Configuration commands
                 )
             ),
 
+        // %build scriptlet: compile and build the software
+        // Contains commands to configure, compile, and prepare software
+        // Common macros: %configure, %make_build, %cmake_build
         build_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%build', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Build commands
                 )
             ),
 
+        // %install scriptlet: install software into build root
+        // Installs files to %{buildroot} directory structure
+        // Common macros: %make_install, %cmake_install
         install_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%install', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Installation commands
                 )
             ),
 
+        // %check scriptlet: run test suite
+        // Executes after %install to validate the build
+        // Can be disabled with --nocheck rpmbuild option
         check_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%check', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Test commands
                 )
             ),
 
+        // %clean scriptlet: clean up build artifacts (deprecated)
+        // Historically used to remove %{buildroot} after build
+        // Modern RPM automatically cleans build root
         clean_scriptlet: ($) =>
             prec.right(
                 seq(
                     alias(token(seq('%clean', NEWLINE)), $.section_name),
-                    optional($.shell_block)
+                    optional($.shell_block) // Cleanup commands
                 )
             ),
 
         ///////////////////////////////////////////////////////////////////////
-        // Runtime scriptlets (%pre, %post, ...)
+        // RUNTIME SCRIPTLETS - PACKAGE LIFECYCLE SCRIPTS
+        //
+        // Runtime scriptlets execute during package installation/removal:
+        // - %pre: Before package installation
+        // - %post: After package installation
+        // - %preun: Before package removal
+        // - %postun: After package removal
+        // - %pretrans: Before transaction (all packages)
+        // - %posttrans: After transaction (all packages)
+        // - %preuntrans: Before removal transaction
+        // - %postuntrans: After removal transaction
+        // - %verify: During package verification
+        //
+        // Used for:
+        // - System service management (systemctl enable/disable)
+        // - User/group creation
+        // - Database updates
+        // - Configuration file handling
+        //
+        // Example:
+        //   %post
+        //   systemctl enable myservice
+        //
+        //   %preun
+        //   systemctl disable myservice
         ///////////////////////////////////////////////////////////////////////
 
+        // Runtime scriptlets: execute during package install/remove lifecycle
+
+        // Runtime scriptlet: scripts executed during package lifecycle
+        // Can specify subpackage with -n option
+        // Contains shell commands for system integration
         runtime_scriptlet: ($) =>
             prec.right(
                 seq(
                     choice(
-                        '%pre',
-                        '%post',
-                        '%preun',
-                        '%postun',
-                        '%pretrans',
-                        '%posttrans',
-                        '%preuntrans',
-                        '%postuntrans',
-                        '%verify'
+                        '%pre', // Before installation
+                        '%post', // After installation
+                        '%preun', // Before removal
+                        '%postun', // After removal
+                        '%pretrans', // Before transaction
+                        '%posttrans', // After transaction
+                        '%preuntrans', // Before removal transaction
+                        '%postuntrans', // After removal transaction
+                        '%verify' // During verification
                     ),
-                    optional(seq(optional('-n'), $._literal)),
+                    optional(seq(optional('-n'), $._literal)), // Optional subpackage name
                     token.immediate(NEWLINE),
-                    optional($.shell_block)
+                    optional($.shell_block) // Shell commands to execute
                 )
             ),
 
@@ -800,92 +1056,143 @@ module.exports = grammar({
             ),
 
         ///////////////////////////////////////////////////////////////////////
-        // Files section (%files)
+        // FILES SECTION - PACKAGE FILE LISTING
+        //
+        // The %files section lists all files included in the package.
+        // Each file can have attributes specifying:
+        // - Permissions: %attr(mode, user, group)
+        // - Type qualifiers: %config, %doc, %dir, %ghost, etc.
+        // - Verification attributes: %verify(not size mtime)
+        //
+        // File types:
+        // - %config: Configuration files (preserved on upgrade)
+        // - %doc: Documentation files
+        // - %dir: Directories (created if missing)
+        // - %ghost: Files not packaged but owned by package
+        // - %license: License files
+        //
+        // Examples:
+        //   %files
+        //   %defattr(-,root,root,-)
+        //   %{_bindir}/myprogram
+        //   %config(noreplace) %{_sysconfdir}/myprogram.conf
+        //   %doc README.md
+        //   %attr(755,root,root) %{_bindir}/special-program
         ///////////////////////////////////////////////////////////////////////
 
+        // Files section: lists files included in the package
+
+        // Files section: declares which files belong to the package
+        // Can specify subpackage name and file list from external file
         files: ($) =>
             prec.right(
                 seq(
                     alias('%files', $.section_name),
-                    optional(choice($._literal, seq('-n', $._literal))),
-                    optional(seq('-f', $._literal)),
+                    optional(
+                        choice(
+                            $._literal, // Subpackage name
+                            seq('-n', $._literal) // Explicit subpackage name
+                        )
+                    ),
+                    optional(seq('-f', $._literal)), // Read file list from file
                     token.immediate(NEWLINE),
-                    repeat(choice($._compound_statements, $.defattr, $.file))
+                    repeat(
+                        choice(
+                            $._compound_statements, // Conditional file inclusion
+                            $.defattr, // Default file attributes
+                            $.file // Individual file entries
+                        )
+                    )
                 )
             ),
 
+        // Default file attributes: sets default permissions for all files
+        // Format: %defattr(mode, user, group, dirmode)
+        // Use '-' to keep existing permissions
+        // Example:
+        // %defattr(-,root,root,-) sets root ownership, preserves permissions
         defattr: ($) =>
             seq(
                 '%defattr',
                 '(',
-                choice('-', /[0-9]+/),
+                choice('-', /[0-9]+/), // File mode (octal) or '-' for default
                 ',',
-                /[a-zA-Z]+/,
+                /[a-zA-Z]+/, // User name
                 ',',
-                /[a-zA-Z]+/,
+                /[a-zA-Z]+/, // Group name
                 ')',
                 token.immediate(NEWLINE)
             ),
 
+        // File qualifiers: specify file type and handling behavior
+        // These affect how RPM treats the file during install/upgrade
         file_qualifier: ($) =>
             seq(
                 choice(
-                    '%artifact',
-                    '%config',
-                    '%dir',
-                    '%doc',
-                    '%docdir',
-                    '%ghost',
-                    '%license',
-                    '%missingok',
-                    '%readme',
-                    $.verify
+                    '%artifact', // Build artifact (build system metadata)
+                    '%config', // Configuration file (preserved on upgrade)
+                    '%dir', // Directory (created if missing)
+                    '%doc', // Documentation file
+                    '%docdir', // Documentation directory
+                    '%ghost', // Ghost file (not in package, but owned)
+                    '%license', // License file
+                    '%missingok', // OK if file is missing at install
+                    '%readme', // README file
+                    $.verify // Custom verification attributes
                 ),
-                token.immediate(BLANK)
+                token.immediate(BLANK) // Required whitespace after qualifier
             ),
 
+        // File entry: individual file with optional attributes and qualifiers
+        // Can specify custom permissions, file type, and path
         file: ($) =>
             seq(
-                optional($.attr),
-                optional($.file_qualifier),
-                $.string,
-                token.immediate(NEWLINE)
+                optional($.attr), // Custom file attributes
+                optional($.file_qualifier), // File type qualifier
+                $.string, // File path (can contain macros)
+                token.immediate(NEWLINE) // Must end with newline
             ),
 
+        // File attributes: custom permissions for individual files
+        // Format: %attr(mode, user, group) filepath
+        // Use '-' to inherit from %defattr or filesystem defaults
         attr: ($) =>
             seq(
                 '%attr',
                 '(',
-                choice('-', /[0-9]+/),
+                choice('-', /[0-9]+/), // File mode (octal) or '-'
                 ',',
-                /[a-zA-Z]+/,
+                /[a-zA-Z]+/, // User name
                 ',',
-                /[a-zA-Z]+/,
+                /[a-zA-Z]+/, // Group name
                 ')',
-                token.immediate(BLANK)
+                token.immediate(BLANK) // Required whitespace before filename
             ),
 
-        // %verify(not size filedigest mtime) %{prefix}/bin/file
+        // Verify attributes: control package verification behavior
+        // Specifies which file attributes to verify during rpm -V
+        // Use 'not' to exclude specific verification checks
+        // Example: %verify(not size filedigest mtime) %{prefix}/bin/file
         verify: ($) =>
             seq(
                 '%verify',
                 token.immediate('('),
                 repeat(
                     choice(
-                        'filedigest',
-                        'group',
-                        'maj',
-                        'md5',
-                        'mode',
-                        'min',
-                        'mtime',
-                        'not',
-                        'owner',
-                        'size',
-                        'symlink'
+                        'filedigest', // File checksum verification
+                        'group', // Group ownership
+                        'maj', // Major device number
+                        'md5', // MD5 checksum (deprecated)
+                        'mode', // File permissions
+                        'min', // Minor device number
+                        'mtime', // Modification time
+                        'not', // Negation modifier
+                        'owner', // User ownership
+                        'size', // File size
+                        'symlink' // Symbolic link target
                     )
                 ),
-                token.immediate(')')
+                token.immediate(')') // Closing parenthesis
             ),
 
         ///////////////////////////////////////////////////////////////////////
@@ -913,82 +1220,147 @@ module.exports = grammar({
         // Special Macros (%autosetup, %autopatch, %setup, ...)
         ///////////////////////////////////////////////////////////////////////
 
+        // TODO FIXME
+
         ///////////////////////////////////////////////////////////////////////
-        // Directives (%attr, %dir, %config, ...)
+        // LITERAL VALUES - NUMBERS, VERSIONS, AND STRINGS
+        //
+        // RPM specs support various literal value types:
+        // - Integers: 123, -456, 0x1a2b (with optional suffixes)
+        // - Floating point: 1.23, 45.67
+        // - Version numbers: 1.2.3, 2.0.1-beta, 1.0~rc1
+        // - Strings: unquoted words, "quoted strings"
+        // - Text blocks: multi-line content in descriptions
+        //
+        // String concatenation happens automatically when expressions
+        // are adjacent: %{name}-%{version} becomes "package-1.0"
         ///////////////////////////////////////////////////////////////////////
 
+        // Integer literals: whole numbers with optional base and suffix
+        // Supports decimal (123), hexadecimal (0x1a), and RPM version suffixes
+        // Example: 0x10#sometext for special RPM version handling
         integer: ($) => token(/-?(0x)?[0-9]+(#[0-9A-Za-z@_]+)?/),
 
+        // Floating point literals: decimal numbers with fractional part
+        // Supports underscores in digits for readability: 1_000.50
         float: ($) => {
             const digits = repeat1(/[0-9]+_?/);
 
             return token(seq(digits, '.', digits));
         },
 
+        // Version literals: semantic version numbers with optional suffixes
+        // Supports various version formats: 1.2.3, 2.0-beta, 1.0~rc1+git123
+        // Common in RPM for package versioning and dependency specifications
         version: ($) => {
             const digits = repeat1(/[0-9]+_?/);
 
             return token(
-                seq(digits, '.', digits, optional(/[a-zA-Z0-9+._-~]+/))
+                seq(
+                    digits,
+                    '.',
+                    digits, // Major.minor version
+                    optional(/[a-zA-Z0-9+._-~]+/) // Optional suffix (patch, pre-release, etc.)
+                )
             );
         },
 
+        // Text blocks: multi-line content with macro expansion support
+        // Used in %description sections and other narrative content
+        // Low precedence (-1) allows greedy matching of text content
         text: ($) =>
             prec(
                 -1,
                 repeat1(
                     seq(
                         choice(
-                            seq(optional('%'), $.text_content),
-                            $.macro_simple_expansion,
-                            $.macro_expansion
+                            seq(optional('%'), $.text_content), // Raw text (% is literal)
+                            $.macro_simple_expansion, // %macro
+                            $.macro_expansion // %{macro}
                         )
                     )
                 )
             ),
 
+        // Text content: raw text excluding macro delimiters and quotes
+        // Supports backslash escaping and line continuations
+        // Excludes % " \ characters that have special meaning
         text_content: (_) => token(prec(-1, /([^"%\\\r\n]|\\(.|\r?\n))+/)),
 
+        // String values: sequences of text and macro expansions
+        // Automatically concatenates adjacent elements
+        // Left precedence for proper parsing of concatenated strings
         string: ($) =>
             prec.left(
                 repeat1(
                     choice(
-                        seq(optional('%'), $.string_content),
-                        $.macro_simple_expansion,
-                        $.macro_expansion
+                        seq(optional('%'), $.string_content), // Raw string content
+                        $.macro_simple_expansion, // %macro expansions
+                        $.macro_expansion // %{macro} expansions
                     )
                 )
             ),
 
+        // String content: raw text excluding macro delimiters
+        // Does not include quotes, backslashes, or newlines
         string_content: (_) => token(prec(-1, /([^%\\\r\n])+/)),
 
+        // Quoted strings: explicit string literals with macro expansion
+        // Allows macro expansion within quotes: "prefix-%{version}-suffix"
+        // Used when whitespace or special characters need to be preserved
         quoted_string: ($) =>
             seq(
-                '"',
-                repeat(choice($.macro_expansion, $.quoted_string_content)),
-                '"'
+                '"', // Opening quote
+                repeat(
+                    choice(
+                        $.macro_expansion, // %{macro} inside quotes
+                        $.quoted_string_content // Literal text
+                    )
+                ),
+                '"' // Closing quote
             ),
 
+        // Quoted string content: literal text within quotes
+        // Excludes quotes, macro delimiters, and line breaks
         quoted_string_content: (_) => token(prec(-1, /([^"%\\\r\n])+/)),
 
+        // Word tokens: unquoted identifiers and simple values
+        // Excludes whitespace and special characters that have syntactic meaning
+        // Used for simple identifiers, paths, and unquoted string values
         word: ($) => token(/([^\s"#%{}()\\])+/),
 
+        // String concatenation: automatic joining of adjacent expressions
+        // RPM automatically concatenates adjacent values without operators
+        // Low precedence (-1) ensures this binds loosely
+        // Example: %{name}-%{version}.tar.gz becomes "mypackage-1.0.tar.gz"
         concatenation: ($) =>
             prec(
                 -1,
-                seq($._primary_expression, repeat1($._primary_expression))
+                seq(
+                    $._primary_expression, // First expression
+                    repeat1($._primary_expression) // One or more additional expressions
+                )
             ),
     },
 });
 
 /**
- * Creates a rule to match one or more occurrences of `rule` separated by `sep`
+ * Creates a rule to match one or more occurrences of `rule` separated by `separator`
+ *
+ * This is a common Tree-sitter pattern for parsing comma-separated lists,
+ * space-separated arguments, and other delimited sequences.
+ *
+ * The pattern generates: rule (separator rule)
+ *
+ * Examples:
+ * - sep1($.identifier, ',') matches: \"a, b, c\"
+ * - sep1($.argument, /\\s+/) matches: \"arg1 arg2 arg3\"
  *
  * @param {RuleOrLiteral} rule
  *
  * @param {RuleOrLiteral} separator
  *
- * @return {SeqRule}
+ * @return {SeqRule} A sequence rule matching one or more separated items
  *
  */
 function sep1(rule, separator) {
