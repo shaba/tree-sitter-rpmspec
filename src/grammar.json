@@ -193,11 +193,11 @@
         },
         {
           "type": "SYMBOL",
-          "name": "primary_expression"
+          "name": "_primary_expression"
         }
       ]
     },
-    "primary_expression": {
+    "_primary_expression": {
       "type": "PREC",
       "value": 1,
       "content": {
@@ -765,6 +765,19 @@
                       "type": "CHOICE",
                       "members": [
                         {
+                          "type": "ALIAS",
+                          "content": {
+                            "type": "SYMBOL",
+                            "name": "_macro_definition"
+                          },
+                          "named": true,
+                          "value": "macro_definition"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "macro_undefinition"
+                        },
+                        {
                           "type": "SYMBOL",
                           "name": "macro_simple_expansion"
                         },
@@ -790,6 +803,22 @@
       }
     },
     "macro_definition": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "_macro_definition"
+        },
+        {
+          "type": "IMMEDIATE_TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "\\r?\\n"
+          }
+        }
+      ]
+    },
+    "_macro_definition": {
       "type": "PREC_LEFT",
       "value": 0,
       "content": {
@@ -874,13 +903,6 @@
             "content": {
               "type": "SYMBOL",
               "name": "_body"
-            }
-          },
-          {
-            "type": "IMMEDIATE_TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "\\r?\\n"
             }
           }
         ]
@@ -1225,7 +1247,7 @@
                 "name": "left",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               },
               {
@@ -1241,7 +1263,7 @@
                 "name": "right",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               }
             ]
@@ -1258,7 +1280,7 @@
                 "name": "left",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               },
               {
@@ -1274,7 +1296,7 @@
                 "name": "right",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               }
             ]
@@ -1291,7 +1313,7 @@
                 "name": "left",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               },
               {
@@ -1307,7 +1329,7 @@
                 "name": "right",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               }
             ]
@@ -1324,7 +1346,7 @@
                 "name": "left",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               },
               {
@@ -1340,7 +1362,7 @@
                 "name": "right",
                 "content": {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               }
             ]
@@ -1356,7 +1378,7 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "primary_expression"
+            "name": "_primary_expression"
           },
           {
             "type": "REPEAT1",
@@ -1398,7 +1420,7 @@
                 },
                 {
                   "type": "SYMBOL",
-                  "name": "primary_expression"
+                  "name": "_primary_expression"
                 }
               ]
             }
@@ -1524,7 +1546,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "primary_expression"
+          "name": "_primary_expression"
         }
       ]
     },
@@ -2042,55 +2064,11 @@
         },
         {
           "type": "STRING",
-          "value": "BugUrl"
-        },
-        {
-          "type": "STRING",
-          "value": "BuildRoot"
-        },
-        {
-          "type": "STRING",
-          "value": "BuildSystem"
-        },
-        {
-          "type": "STRING",
-          "value": "DistTag"
-        },
-        {
-          "type": "STRING",
-          "value": "Distribution"
-        },
-        {
-          "type": "STRING",
-          "value": "Epoch"
-        },
-        {
-          "type": "STRING",
-          "value": "Group"
-        },
-        {
-          "type": "STRING",
-          "value": "License"
-        },
-        {
-          "type": "STRING",
-          "value": "ModularityLabel"
-        },
-        {
-          "type": "STRING",
           "value": "Name"
         },
         {
           "type": "STRING",
-          "value": "NoPatch"
-        },
-        {
-          "type": "STRING",
-          "value": "NoSource"
-        },
-        {
-          "type": "STRING",
-          "value": "Packager"
+          "value": "Version"
         },
         {
           "type": "STRING",
@@ -2098,11 +2076,15 @@
         },
         {
           "type": "STRING",
-          "value": "SourceLicense"
+          "value": "Epoch"
         },
         {
           "type": "STRING",
           "value": "Summary"
+        },
+        {
+          "type": "STRING",
+          "value": "License"
         },
         {
           "type": "STRING",
@@ -2114,7 +2096,11 @@
         },
         {
           "type": "STRING",
-          "value": "VCS"
+          "value": "BugUrl"
+        },
+        {
+          "type": "STRING",
+          "value": "Packager"
         },
         {
           "type": "STRING",
@@ -2122,7 +2108,43 @@
         },
         {
           "type": "STRING",
-          "value": "Version"
+          "value": "Group"
+        },
+        {
+          "type": "STRING",
+          "value": "BuildRoot"
+        },
+        {
+          "type": "STRING",
+          "value": "BuildSystem"
+        },
+        {
+          "type": "STRING",
+          "value": "Distribution"
+        },
+        {
+          "type": "STRING",
+          "value": "DistTag"
+        },
+        {
+          "type": "STRING",
+          "value": "ModularityLabel"
+        },
+        {
+          "type": "STRING",
+          "value": "VCS"
+        },
+        {
+          "type": "STRING",
+          "value": "SourceLicense"
+        },
+        {
+          "type": "STRING",
+          "value": "NoPatch"
+        },
+        {
+          "type": "STRING",
+          "value": "NoSource"
         },
         {
           "type": "PATTERN",
@@ -2214,11 +2236,7 @@
         },
         {
           "type": "STRING",
-          "value": "BuildArch"
-        },
-        {
-          "type": "STRING",
-          "value": "BuildArchitectures"
+          "value": "BuildRequires"
         },
         {
           "type": "STRING",
@@ -2230,19 +2248,11 @@
         },
         {
           "type": "STRING",
-          "value": "BuildRequires"
+          "value": "BuildArch"
         },
         {
           "type": "STRING",
-          "value": "Conflicts"
-        },
-        {
-          "type": "STRING",
-          "value": "DocDir"
-        },
-        {
-          "type": "STRING",
-          "value": "Enhances"
+          "value": "BuildArchitectures"
         },
         {
           "type": "STRING",
@@ -2250,11 +2260,11 @@
         },
         {
           "type": "STRING",
-          "value": "ExcludeOS"
+          "value": "ExclusiveArch"
         },
         {
           "type": "STRING",
-          "value": "ExclusiveArch"
+          "value": "ExcludeOS"
         },
         {
           "type": "STRING",
@@ -2262,11 +2272,47 @@
         },
         {
           "type": "STRING",
+          "value": "Provides"
+        },
+        {
+          "type": "STRING",
+          "value": "Conflicts"
+        },
+        {
+          "type": "STRING",
           "value": "Obsoletes"
         },
         {
           "type": "STRING",
+          "value": "Requires"
+        },
+        {
+          "type": "STRING",
+          "value": "Prereq"
+        },
+        {
+          "type": "STRING",
           "value": "OrderWithRequires"
+        },
+        {
+          "type": "STRING",
+          "value": "Recommends"
+        },
+        {
+          "type": "STRING",
+          "value": "Suggests"
+        },
+        {
+          "type": "STRING",
+          "value": "Supplements"
+        },
+        {
+          "type": "STRING",
+          "value": "Enhances"
+        },
+        {
+          "type": "STRING",
+          "value": "DocDir"
         },
         {
           "type": "STRING",
@@ -2278,27 +2324,7 @@
         },
         {
           "type": "STRING",
-          "value": "Prereq"
-        },
-        {
-          "type": "STRING",
-          "value": "Provides"
-        },
-        {
-          "type": "STRING",
-          "value": "Recommends"
-        },
-        {
-          "type": "STRING",
           "value": "RemovePathPostfixes"
-        },
-        {
-          "type": "STRING",
-          "value": "Suggests"
-        },
-        {
-          "type": "STRING",
-          "value": "Supplements"
         }
       ]
     },
@@ -3704,13 +3730,13 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "primary_expression"
+            "name": "_primary_expression"
           },
           {
             "type": "REPEAT1",
             "content": {
               "type": "SYMBOL",
-              "name": "primary_expression"
+              "name": "_primary_expression"
             }
           }
         ]
@@ -3753,7 +3779,7 @@
     "_simple_statements",
     "_compound_statements",
     "expression",
-    "primary_expression"
+    "_primary_expression"
   ],
   "reserved": {}
 }
