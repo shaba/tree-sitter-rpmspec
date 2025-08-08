@@ -4,7 +4,7 @@
 
 ```bash
 mkdir parser
-ln -s ../libtree-sitter-rpmspec.so parser/rpmspec.so
+ln -s ../build/libtree-sitter-rpmspec.so parser/rpmspec.so
 ln -s . queries/rpmspec
 ```
 
