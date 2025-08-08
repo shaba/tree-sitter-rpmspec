@@ -276,3 +276,54 @@ Files (%ifarch)
           (macro_expansion
             (identifier))
           (string_content))))))
+
+===============================================================================
+Files (%config with parameters)
+:skip
+===============================================================================
+
+%files
+%config(noreplace) /etc/myapp.conf
+%config(missingok) /etc/optional.conf
+
+-------------------------------------------------------------------------------
+
+===============================================================================
+Files (shell globbing patterns)
+===============================================================================
+
+%files
+%{_bindir}/*
+/etc/myapp/*.conf
+/usr/share/myapp/[abc]*
+/var/log/myapp/*.log
+
+-------------------------------------------------------------------------------
+
+(spec
+  (files
+    (section_name)
+    (file
+      (string
+        (macro_expansion
+          (identifier))
+        (string_content)))
+    (file
+      (string
+        (string_content)))
+    (file
+      (string
+        (string_content)))
+    (file
+      (string
+        (string_content)))))
+
+===============================================================================
+Files (complex %attr expressions)
+:skip
+===============================================================================
+
+%files
+%attr(%{file_mode},%{file_user},%{file_group}) %{_bindir}/myapp
+
+-------------------------------------------------------------------------------
