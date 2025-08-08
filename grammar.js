@@ -252,6 +252,11 @@ module.exports = grammar({
                             field(
                                 'consequence',
                                 choice(
+                                    alias(
+                                        $._macro_definition,
+                                        $.macro_definition
+                                    ),
+                                    $.macro_undefinition,
                                     $.macro_simple_expansion,
                                     $.macro_expansion,
                                     $.text
@@ -266,6 +271,9 @@ module.exports = grammar({
         //
         // %define <name>[(opts)] <body>
         macro_definition: ($) =>
+            seq($._macro_definition, token.immediate(NEWLINE)),
+
+        _macro_definition: ($) =>
             prec.left(
                 seq(
                     '%',
@@ -274,8 +282,7 @@ module.exports = grammar({
                     field('name', alias($.macro_name, $.identifier)),
                     optional(seq('(', optional($.macro_options), ')')),
                     token.immediate(BLANK),
-                    field('value', $._body),
-                    token.immediate(NEWLINE)
+                    field('value', $._body)
                 )
             ),
 

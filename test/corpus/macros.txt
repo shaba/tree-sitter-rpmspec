@@ -201,3 +201,43 @@ Macros (Expansion with multiple arguments)
     (word)
     (integer))
   (comment))
+
+===============================================================================
+Macros (Conditional macro defintion #1)
+===============================================================================
+
+%{!?_make_verbose:%define _make_verbose V=1 VERBOSE=1}
+
+-------------------------------------------------------------------------------
+
+(spec
+  (macro_expansion
+    (conditional_expansion
+      (identifier)
+      (macro_definition
+        (macro_builtin)
+        (identifier)
+        (word)
+        (word)))))
+
+===============================================================================
+Macros (Conditional macro definition #2)
+===============================================================================
+
+%{!?gopath: %global gopath %{_datadir}/gocode}
+
+# Comment
+
+-------------------------------------------------------------------------------
+
+(spec
+  (macro_expansion
+    (conditional_expansion
+      (identifier)
+      (macro_definition
+        (macro_builtin)
+        (identifier)
+        (macro_expansion
+          (identifier))
+        (word))))
+  (comment))
