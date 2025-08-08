@@ -128,6 +128,10 @@
         "named": true
       },
       {
+        "type": "patch_macro",
+        "named": true
+      },
+      {
         "type": "preamble",
         "named": true
       },
@@ -137,6 +141,10 @@
       },
       {
         "type": "runtime_scriptlet",
+        "named": true
+      },
+      {
+        "type": "setup_macro",
         "named": true
       },
       {
@@ -412,6 +420,10 @@
           },
           {
             "type": "<=",
+            "named": false
+          },
+          {
+            "type": "=",
             "named": false
           },
           {
@@ -1422,6 +1434,120 @@
     }
   },
   {
+    "type": "patch_flag",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "patch_legacy_token",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "macro_builtin",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "patch_long_option",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "patch_macro",
+    "named": true,
+    "fields": {
+      "patch_number": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "integer",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "macro_builtin",
+          "named": true
+        },
+        {
+          "type": "patch_flag",
+          "named": true
+        },
+        {
+          "type": "patch_legacy_token",
+          "named": true
+        },
+        {
+          "type": "patch_long_option",
+          "named": true
+        },
+        {
+          "type": "patch_number_option",
+          "named": true
+        },
+        {
+          "type": "patch_string_option",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "patch_number_option",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "integer",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "patch_string_option",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "preamble",
     "named": true,
     "fields": {},
@@ -1503,6 +1629,77 @@
     }
   },
   {
+    "type": "setup_flag",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "setup_macro",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "setup_flag",
+            "named": true
+          },
+          {
+            "type": "setup_name_option",
+            "named": true
+          },
+          {
+            "type": "setup_source_option",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "macro_builtin",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "setup_name_option",
+    "named": true,
+    "fields": {
+      "directory": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "setup_source_option",
+    "named": true,
+    "fields": {
+      "number": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "integer",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "shell_block",
     "named": true,
     "fields": {},
@@ -1528,6 +1725,14 @@
         },
         {
           "type": "macro_undefinition",
+          "named": true
+        },
+        {
+          "type": "patch_macro",
+          "named": true
+        },
+        {
+          "type": "setup_macro",
           "named": true
         },
         {
@@ -1594,11 +1799,11 @@
         "required": true,
         "types": [
           {
-            "type": "_primary_expression",
+            "type": "concatenation",
             "named": true
           },
           {
-            "type": "concatenation",
+            "type": "expression",
             "named": true
           }
         ]
@@ -1913,6 +2118,10 @@
     "named": false
   },
   {
+    "type": "--",
+    "named": false
+  },
+  {
     "type": "-f",
     "named": false
   },
@@ -1934,6 +2143,10 @@
   },
   {
     "type": "<=",
+    "named": false
+  },
+  {
+    "type": "=",
     "named": false
   },
   {
@@ -1997,7 +2210,15 @@
     "named": false
   },
   {
+    "type": "C",
+    "named": false
+  },
+  {
     "type": "Conflicts",
+    "named": false
+  },
+  {
+    "type": "D",
     "named": false
   },
   {
@@ -2010,6 +2231,10 @@
   },
   {
     "type": "DocDir",
+    "named": false
+  },
+  {
+    "type": "E",
     "named": false
   },
   {
@@ -2034,6 +2259,10 @@
   },
   {
     "type": "ExclusiveOS",
+    "named": false
+  },
+  {
+    "type": "F",
     "named": false
   },
   {
@@ -2097,6 +2326,10 @@
     "named": false
   },
   {
+    "type": "R",
+    "named": false
+  },
+  {
     "type": "Recommends",
     "named": false
   },
@@ -2137,6 +2370,10 @@
     "named": false
   },
   {
+    "type": "T",
+    "named": false
+  },
+  {
     "type": "URL",
     "named": false
   },
@@ -2157,11 +2394,31 @@
     "named": false
   },
   {
+    "type": "Z",
+    "named": false
+  },
+  {
+    "type": "a",
+    "named": false
+  },
+  {
     "type": "and",
     "named": false
   },
   {
+    "type": "b",
+    "named": false
+  },
+  {
+    "type": "backup",
+    "named": false
+  },
+  {
     "type": "basename",
+    "named": false
+  },
+  {
+    "type": "c",
     "named": false
   },
   {
@@ -2216,6 +2473,10 @@
   {
     "type": "float",
     "named": true
+  },
+  {
+    "type": "fuzz",
+    "named": false
   },
   {
     "type": "getdirconf",
@@ -2307,7 +2568,15 @@
     "named": false
   },
   {
+    "type": "n",
+    "named": false
+  },
+  {
     "type": "not",
+    "named": false
+  },
+  {
+    "type": "o",
     "named": false
   },
   {
@@ -2316,6 +2585,10 @@
   },
   {
     "type": "owner",
+    "named": false
+  },
+  {
+    "type": "p",
     "named": false
   },
   {
@@ -2340,6 +2613,10 @@
   },
   {
     "type": "preun",
+    "named": false
+  },
+  {
+    "type": "q",
     "named": false
   },
   {
@@ -2453,6 +2730,10 @@
   {
     "type": "word",
     "named": true
+  },
+  {
+    "type": "z",
+    "named": false
   },
   {
     "type": "||",
