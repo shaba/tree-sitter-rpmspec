@@ -374,3 +374,134 @@ Provides:       tree-sitter-rpm-spec = bar
         (word)
         (word)
         (word)))))
+
+===============================================================================
+Preamble Section (Requires with version operators)
+:skip
+===============================================================================
+
+Name:           tree-sitter-rpmspec
+Requires:       cmake >= 3.10
+Requires:       gcc < 12.0
+BuildRequires:  python3 >= 3.8.0
+
+-------------------------------------------------------------------------------
+
+(spec
+  (preamble
+    (tags
+      (tag)
+      (word)))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (word)
+        (float))))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (word)
+        (float))))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (word)
+        (version)))))
+
+===============================================================================
+Preamble Section (Complex boolean dependencies)
+:skip
+===============================================================================
+
+Name:           tree-sitter-rpmspec
+Requires:       (package1 >= 1.0 and package2) or package3
+
+-------------------------------------------------------------------------------
+
+(spec
+  (preamble
+    (tags
+      (tag)
+      (word)))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (parenthesized_expression
+          (boolean_operator
+            (comparison_operator
+              (word)
+              (float))
+            (word)))
+        (word)
+        (word)))))
+
+===============================================================================
+Preamble Section (Epoch in dependencies)
+:skip
+===============================================================================
+
+Name:           tree-sitter-rpmspec
+Requires:       package = 2:1.0.0-1
+BuildRequires:  another-package >= 1:2.0.0
+
+-------------------------------------------------------------------------------
+
+(spec
+  (preamble
+    (tags
+      (tag)
+      (word)))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (word)
+        (word))))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (word)
+        (word)))))
+
+===============================================================================
+Preamble Section (Virtual capabilities with complex naming)
+:skip
+===============================================================================
+
+Name:           tree-sitter-rpmspec
+Provides:       virtual(capability-name) = 1.0
+Requires:       capability(feature.subfeature)
+
+-------------------------------------------------------------------------------
+
+(spec
+  (preamble
+    (tags
+      (tag)
+      (word)))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (parenthesized_expression
+          (word))
+        (word)
+        (float))))
+  (preamble
+    (tags
+      (dependency_tag)
+      (concatenation
+        (word)
+        (parenthesized_expression
+          (word))))))
