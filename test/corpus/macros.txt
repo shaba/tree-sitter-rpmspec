@@ -250,7 +250,6 @@ Macros (Complex arguments with quotes)
 %patch0 -p1 --fuzz=0 --backup="file.bak"
 
 -------------------------------------------------------------------------------
-
 (spec
   (setup_macro
     (macro_builtin)
@@ -258,14 +257,14 @@ Macros (Complex arguments with quotes)
     (setup_name_option
       (quoted_string
         (quoted_string_content))))
-  (macro_call
-    (macro_simple_expansion
-      (identifier))
-    (word)
-    (word)
-    (word)
-    (quoted_string
-      (quoted_string_content))))
+  (patch_macro
+    (patch_legacy_token)
+    (patch_number_option)
+    (patch_long_option
+      (integer))
+    (patch_long_option
+      (quoted_string
+        (quoted_string_content)))))
 
 ===============================================================================
 Macros (Arguments with escaping)

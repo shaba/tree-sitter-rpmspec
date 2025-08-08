@@ -104,7 +104,8 @@ module.exports = grammar({
                 $.macro_definition, // %define, %global
                 $.macro_undefinition, // %undefine
                 $.setup_macro, // %setup with specific option support
-                $.macro_call, // %patch, etc. (general macro calls)
+                $.patch_macro, // %patch with specific option support
+                $.macro_call, // %configure, etc. (general macro calls)
                 $.macro_expansion, // %{name}, %name
                 $.preamble, // Name:, Version:, etc.
                 $.description, // %description section
@@ -859,8 +860,10 @@ module.exports = grammar({
         //   %setup -q
         //   %patch0 -p1
         //
-        //   %build
+        //   %conf
         //   %configure
+        //
+        //   %build
         //   %make_build
         ///////////////////////////////////////////////////////////////////////
 
@@ -878,7 +881,8 @@ module.exports = grammar({
                         $.macro_definition, // Inline %define statements
                         $.macro_undefinition, // Inline %undefine statements
                         $.setup_macro, // %setup with specific option support
-                        $.macro_call, // Macro calls like %patch
+                        $.patch_macro, // %patch with specific option support
+                        $.macro_call, // Macro calls like %configure
                         $.string // Raw shell command text
                     )
                 )
@@ -1266,6 +1270,74 @@ module.exports = grammar({
                 '-',
                 'n', // Set name of build directory
                 field('directory', $._primary_expression)
+            ),
+
+        ///////////////////////////////////////////////////////////////////////
+        // Legacy patch token for %patch0, %patch1 etc.
+        patch_legacy_token: ($) => token(/%patch[0-9]+/),
+
+        // %patch macro: patch application with comprehensive option support
+        // Syntax: %patch [number] [options] or %patch [options]
+        // Supports modern (%patch 1, %patch -P1) and legacy (%patch0) syntax
+        patch_macro: ($) =>
+            seq(
+                choice(
+                    // Legacy syntax: %patch0, %patch1, etc. (direct number attachment)
+                    field('legacy_patch', $.patch_legacy_token),
+                    // Modern syntax: %patch [optional number]
+                    seq('%patch', optional(field('patch_number', $.integer)))
+                ),
+                repeat(
+                    choice(
+                        $.patch_flag, // Simple flags: -E, -R, -Z
+                        $.patch_number_option, // Number options: -F N, -p N, -P N
+                        $.patch_string_option, // String options: -b SUF, -z SUF, -o FILE
+                        $.patch_long_option // Long options: --fuzz=N, --backup=SUF
+                    )
+                ),
+                NEWLINE
+            ),
+
+        // Simple patch flags (no parameters)
+        patch_flag: ($) =>
+            seq(
+                '-',
+                choice(
+                    'E', // Remove files emptied by patching
+                    'R', // Assume reversed patch
+                    'Z' // Set mtime and atime from context diff headers using UTC
+                )
+            ),
+
+        // Patch options that take a number parameter
+        patch_number_option: ($) =>
+            choice(
+                // Immediate format: -p1, -F3, -P2
+                token(seq('-', choice('F', 'p', 'P'), /[0-9]+/)),
+                // Spaced format: -p 1, -F 3, -P 2
+                seq('-', choice('F', 'p', 'P'), field('value', $.integer))
+            ),
+
+        // Patch options that take a string parameter
+        patch_string_option: ($) =>
+            seq(
+                '-',
+                choice(
+                    'b', // Backup with suffix
+                    'z', // Same as -b
+                    'o' // Send output to file
+                ),
+                field('value', $._primary_expression)
+            ),
+
+        // Long patch options: --option=value format
+        patch_long_option: ($) =>
+            seq(
+                '--',
+                choice(
+                    seq('fuzz', '=', field('value', $.integer)), // --fuzz=N
+                    seq('backup', '=', field('value', $._primary_expression)) // --backup=SUF
+                )
             ),
 
         ///////////////////////////////////////////////////////////////////////

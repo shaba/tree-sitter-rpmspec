@@ -182,3 +182,145 @@ Prep Section (%setup edge cases)
         (setup_name_option
           (quoted_string
             (quoted_string_content)))))))
+
+===============================================================================
+Prep Section (%patch basic usage)
+===============================================================================
+
+%prep
+%patch 0
+%patch -P 1
+
+-------------------------------------------------------------------------------
+
+(spec
+  (prep_scriptlet
+    (section_name)
+    (shell_block
+      (patch_macro
+        (integer))
+      (patch_macro
+        (patch_number_option
+          (integer))))))
+
+===============================================================================
+Prep Section (%patch with flags)
+===============================================================================
+
+%prep
+%patch 0 -p 1 -E
+%patch 1 -R -Z
+
+-------------------------------------------------------------------------------
+
+(spec
+  (prep_scriptlet
+    (section_name)
+    (shell_block
+      (patch_macro
+        (integer)
+        (patch_number_option
+          (integer))
+        (patch_flag))
+      (patch_macro
+        (integer)
+        (patch_flag)
+        (patch_flag)))))
+
+===============================================================================
+Prep Section (%patch with string options)
+===============================================================================
+
+%prep
+%patch 0 -b .orig
+%patch -P 1 -o /tmp/output
+
+-------------------------------------------------------------------------------
+
+(spec
+  (prep_scriptlet
+    (section_name)
+    (shell_block
+      (patch_macro
+        (integer)
+        (patch_string_option
+          (word)))
+      (patch_macro
+        (patch_number_option
+          (integer))
+        (patch_string_option
+          (word))))))
+
+===============================================================================
+Prep Section (%patch complex combination)
+===============================================================================
+
+%prep
+%patch 0 -p 1 -b .backup -F 2 -E
+%patch -P 2 -R -z .old
+
+-------------------------------------------------------------------------------
+
+(spec
+  (prep_scriptlet
+    (section_name)
+    (shell_block
+      (patch_macro
+        (integer)
+        (patch_number_option
+          (integer))
+        (patch_string_option
+          (word))
+        (patch_number_option
+          (integer))
+        (patch_flag))
+      (patch_macro
+        (patch_number_option
+          (integer))
+        (patch_flag)
+        (patch_string_option
+          (word))))))
+
+===============================================================================
+Prep Section (%patch standalone at top level)
+===============================================================================
+
+%patch 1 -p 1
+%patch -P 0 -E
+
+-------------------------------------------------------------------------------
+
+(spec
+  (patch_macro
+    (integer)
+    (patch_number_option
+      (integer)))
+  (patch_macro
+    (patch_number_option
+      (integer))
+    (patch_flag)))
+
+===============================================================================
+Prep Section (%patch edge cases)
+===============================================================================
+
+%prep
+%patch 10 -F 3
+%patch -b "backup with spaces" -p 0
+
+-------------------------------------------------------------------------------
+
+(spec
+  (prep_scriptlet
+    (section_name)
+    (shell_block
+      (patch_macro
+        (integer)
+        (patch_number_option
+          (integer)))
+      (patch_macro
+        (patch_string_option
+          (quoted_string
+            (quoted_string_content)))
+        (patch_number_option
+          (integer))))))
