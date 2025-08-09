@@ -584,7 +584,8 @@ module.exports = grammar({
         // Combines arithmetic, logical, comparison, and RPM-specific operators
         expression: ($) =>
             choice(
-                $.arithmetic_operator, // +, -, *, /
+                // TODO This should only be used in macro expressions
+                // $.arithmetic_operator, // +, -, *, /
                 $.comparison_operator, // <, <=, ==, !=, >=, >
                 $.not_operator, // !
                 $.boolean_operator, // &&, ||, and, or
