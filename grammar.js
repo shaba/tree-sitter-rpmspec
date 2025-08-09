@@ -180,6 +180,7 @@ module.exports = grammar({
                     $.macro_expansion, // %{name}
                     $.macro_integer_expansion, // 0%{?dist}
                     $.macro_shell_expansion // %(shell command)
+                    // $.macro_expression // %[expression]
                 )
             ),
 
@@ -380,6 +381,7 @@ module.exports = grammar({
                     $.macro_simple_expansion,
                     $.macro_expansion,
                     $.macro_shell_expansion,
+                    // $.macro_expression,
                     $.integer,
                     $.float,
                     $.version,
@@ -417,7 +419,21 @@ module.exports = grammar({
         _macro_argument_list: ($) => sep1($.concatenation, BLANK),
 
         //// Macro Expression: %[<expression>]
-        //macro_expression: ($) => seq('%[', $.expression, ']'),
+        // TODO Postpone this till the rest works. You don't see them often.
+        // macro_expression: ($) => seq('%[', $._macro_expression_body, ']'),
+
+        // Macro expression body: expressions allowed within macro expressions
+        // Includes arithmetic operators that are only allowed in macro contexts
+        // _macro_expression_body: ($) =>
+        //     choice(
+        //         $.arithmetic_operator, // +, -, *, / (only in macro expressions)
+        //         $.comparison_operator, // <, <=, ==, !=, >=, >
+        //         $.not_operator, // !
+        //         $.boolean_operator, // &&, ||, and, or
+        //         $.with_operator, // %{with feature}
+        //         $.defined_operator, // %{defined macro}
+        //         $._primary_expression // literals, macros, etc.
+        //     ),
 
         // TODO: macro_shell_expansion needs to be implemented in an
         // external scanner.
@@ -581,11 +597,9 @@ module.exports = grammar({
             prec(PREC.parenthesized_expression, seq('(', $.expression, ')')),
 
         // Expression: all possible expression types in conditional statements
-        // Combines arithmetic, logical, comparison, and RPM-specific operators
+        // Combines logical, comparison, and RPM-specific operators (no arithmetic)
         expression: ($) =>
             choice(
-                // TODO This should only be used in macro expressions
-                // $.arithmetic_operator, // +, -, *, /
                 $.comparison_operator, // <, <=, ==, !=, >=, >
                 $.not_operator, // !
                 $.boolean_operator, // &&, ||, and, or
