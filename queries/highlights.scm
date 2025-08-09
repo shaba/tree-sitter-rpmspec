@@ -44,6 +44,14 @@
       directory: (_) @string) @variable.parameter)
   ])
 
+(patch_macro
+  [
+    (patch_flag) @variable.parameter
+    (patch_number_option) @variable.parameter
+    (patch_string_option) @variable.parameter
+    (patch_long_option) @variable.parameter
+  ])
+
 [
   (tag)
   (dependency_tag)

@@ -1274,28 +1274,36 @@ module.exports = grammar({
 
         ///////////////////////////////////////////////////////////////////////
         // Legacy patch token for %patch0, %patch1 etc.
-        patch_legacy_token: ($) => token(/%patch[0-9]+/),
+        patch_legacy_token: ($) =>
+            seq(alias(token(prec(2, /patch[0-9]+/)), $.macro_builtin)),
 
         // %patch macro: patch application with comprehensive option support
         // Syntax: %patch [number] [options] or %patch [options]
         // Supports modern (%patch 1, %patch -P1) and legacy (%patch0) syntax
         patch_macro: ($) =>
-            seq(
-                choice(
-                    // Legacy syntax: %patch0, %patch1, etc. (direct number attachment)
-                    field('legacy_patch', $.patch_legacy_token),
-                    // Modern syntax: %patch [optional number]
-                    seq('%patch', optional(field('patch_number', $.integer)))
-                ),
-                repeat(
+            prec(
+                1,
+                seq(
+                    '%',
                     choice(
-                        $.patch_flag, // Simple flags: -E, -R, -Z
-                        $.patch_number_option, // Number options: -F N, -p N, -P N
-                        $.patch_string_option, // String options: -b SUF, -z SUF, -o FILE
-                        $.patch_long_option // Long options: --fuzz=N, --backup=SUF
-                    )
-                ),
-                NEWLINE
+                        // Legacy syntax: %patch0, %patch1, etc. (direct number attachment)
+                        $.patch_legacy_token,
+                        // Modern syntax: %patch [optional number]
+                        seq(
+                            alias('patch', $.macro_builtin),
+                            optional(field('patch_number', $.integer))
+                        )
+                    ),
+                    repeat(
+                        choice(
+                            $.patch_flag, // Simple flags: -E, -R, -Z
+                            $.patch_number_option, // Number options: -F N, -p N, -P N
+                            $.patch_string_option, // String options: -b SUF, -z SUF, -o FILE
+                            $.patch_long_option // Long options: --fuzz=N, --backup=SUF
+                        )
+                    ),
+                    NEWLINE
+                )
             ),
 
         // Simple patch flags (no parameters)

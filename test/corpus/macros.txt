@@ -258,7 +258,8 @@ Macros (Complex arguments with quotes)
       (quoted_string
         (quoted_string_content))))
   (patch_macro
-    (patch_legacy_token)
+    (patch_legacy_token
+      (macro_builtin))
     (patch_number_option)
     (patch_long_option
       (integer))
