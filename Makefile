@@ -9,7 +9,7 @@ build:
 	$(TS) generate
 	cmake --build build
 
-test: all
+test: default
 	$(TS) test
 
 fast-test:
