@@ -111,6 +111,7 @@ module.exports = grammar({
                 $.macro_expansion, // %{name}, %name
                 $.macro_expansion_call, // %name [options] [args] - standalone statement
                 $.macro_simple_expansion, // %name - simple expansion
+                $.macro_shell_expansion, // %(shell command)
                 $.preamble, // Name:, Version:, etc.
                 $.description, // %description section
                 $.package, // %package subsection
@@ -571,25 +572,45 @@ module.exports = grammar({
         //         $._primary_expression // literals, macros, etc.
         //     ),
 
-        // TODO: macro_shell_expansion needs to be implemented in an
-        // external scanner.
-        // Inside the $(...) are also () allowed, so you need to count them to
-        // detect the last one.
-        // %(...)
+        //// Macro Shell Expansion: %(<shell command>)
+        // Executes shell command and substitutes output
+        // Command can contain macro expansions
         macro_shell_expansion: ($) =>
-            choice(
-                seq('%(', ')'),
-                seq(
-                    '%(',
-                    repeat1(
-                        choice(
-                            prec(1, $.macro_expansion),
-                            $.quoted_string,
-                            $.string
-                        )
-                    ),
-                    ')'
+            prec(
+                2,
+                choice(
+                    seq('%(', ')'), // Empty shell command
+                    seq('%(', $.shell_command, ')')
                 )
+            ),
+
+        // Shell command: complete shell command content
+        shell_command: ($) =>
+            repeat1(
+                choice(
+                    $.macro_simple_expansion, // %name
+                    $.macro_expansion, // %{name}
+                    $.shell_code, // Raw shell text including spaces, pipes, quotes
+                    alias($.shell_command_parentheses, $.shell_code) // Balanced parentheses
+                )
+            ),
+
+        // Raw shell command text - matches everything except % and unbalanced )
+        shell_code: (_) => token(prec(-1, /[^%()]+/)),
+
+        // Balanced parentheses within shell commands
+        shell_command_parentheses: ($) =>
+            seq(
+                '(',
+                repeat(
+                    choice(
+                        $.macro_simple_expansion,
+                        $.macro_expansion,
+                        $.shell_code,
+                        alias($.shell_command_parentheses, $.shell_code)
+                    )
+                ),
+                ')'
             ),
 
         ///////////////////////////////////////////////////////////////////////
