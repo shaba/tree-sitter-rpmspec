@@ -1608,8 +1608,9 @@ module.exports = grammar({
             ),
 
         // Quoted string content: literal text within quotes
-        // Excludes quotes, macro delimiters, and line breaks
-        quoted_string_content: (_) => token(prec(-1, /([^"%\\\r\n])+/)),
+        // Includes escaped quotes (\") and other escape sequences
+        // Excludes unescaped quotes, macro delimiters, and line breaks
+        quoted_string_content: (_) => token(prec(-1, /([^"%\\\r\n]|\\.)+/)),
 
         // Word tokens: unquoted identifiers and simple values
         // Excludes whitespace and special characters that have syntactic meaning

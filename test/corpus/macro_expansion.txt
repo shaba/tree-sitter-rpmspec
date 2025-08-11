@@ -217,13 +217,27 @@ Macros (Complex arguments with quotes)
 
 ===============================================================================
 Macros (Arguments with escaping)
-:skip
 ===============================================================================
 
 %configure --enable-feature="value with \"quotes\""
 %make_build CFLAGS="-DVERSION=\"%{version}\""
 
 -------------------------------------------------------------------------------
+
+(spec
+  (macro_simple_expansion_parametric
+    (identifier)
+    (word)
+    (quoted_string
+      (quoted_string_content)))
+  (macro_simple_expansion_parametric
+    (identifier)
+    (word)
+    (quoted_string
+      (quoted_string_content)
+      (macro_expansion
+        (identifier))
+      (quoted_string_content))))
 
 ===============================================================================
 Macros (Nested macro arguments)
