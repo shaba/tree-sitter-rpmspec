@@ -48,7 +48,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "macro_simple_expansion_parametric"
+          "name": "macro_expansion_call"
         },
         {
           "type": "SYMBOL",
@@ -564,7 +564,7 @@
       "type": "STRING",
       "value": "undefine"
     },
-    "macro_simple_expansion_parametric": {
+    "macro_expansion_call": {
       "type": "SEQ",
       "members": [
         {
@@ -782,6 +782,143 @@
                   }
                 ]
               }
+            }
+          ]
+        }
+      ]
+    },
+    "_macro_expansion_call_nested": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "%"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "FIELD",
+                      "name": "operator",
+                      "content": {
+                        "type": "IMMEDIATE_TOKEN",
+                        "content": {
+                          "type": "STRING",
+                          "value": "!"
+                        }
+                      }
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "builtin"
+                },
+                {
+                  "type": "IMMEDIATE_TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\s+"
+                  }
+                },
+                {
+                  "type": "REPEAT1",
+                  "content": {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "FIELD",
+                        "name": "option",
+                        "content": {
+                          "type": "SYMBOL",
+                          "name": "macro_option"
+                        }
+                      },
+                      {
+                        "type": "FIELD",
+                        "name": "argument",
+                        "content": {
+                          "type": "SYMBOL",
+                          "name": "_macro_argument_braced"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "FIELD",
+                      "name": "operator",
+                      "content": {
+                        "type": "IMMEDIATE_TOKEN",
+                        "content": {
+                          "type": "STRING",
+                          "value": "!"
+                        }
+                      }
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "macro_name"
+                  },
+                  "named": true,
+                  "value": "identifier"
+                },
+                {
+                  "type": "IMMEDIATE_TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\s+"
+                  }
+                },
+                {
+                  "type": "REPEAT1",
+                  "content": {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "FIELD",
+                        "name": "option",
+                        "content": {
+                          "type": "SYMBOL",
+                          "name": "macro_option"
+                        }
+                      },
+                      {
+                        "type": "FIELD",
+                        "name": "argument",
+                        "content": {
+                          "type": "SYMBOL",
+                          "name": "_macro_argument_braced"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             }
           ]
         }
@@ -1153,6 +1290,15 @@
                         {
                           "type": "SYMBOL",
                           "name": "macro_simple_expansion"
+                        },
+                        {
+                          "type": "ALIAS",
+                          "content": {
+                            "type": "SYMBOL",
+                            "name": "_macro_expansion_call_nested"
+                          },
+                          "named": true,
+                          "value": "macro_expansion_call"
                         },
                         {
                           "type": "SYMBOL",
@@ -2841,7 +2987,7 @@
             },
             {
               "type": "SYMBOL",
-              "name": "macro_simple_expansion_parametric"
+              "name": "macro_expansion_call"
             },
             {
               "type": "SYMBOL",
@@ -4709,7 +4855,10 @@
       "string"
     ],
     [
-      "macro_simple_expansion_parametric"
+      "macro_expansion_call"
+    ],
+    [
+      "_macro_expansion_call_nested"
     ]
   ],
   "precedences": [],

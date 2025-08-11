@@ -225,12 +225,12 @@ Macros (Arguments with escaping)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (identifier)
     (word)
     (quoted_string
       (quoted_string_content)))
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (identifier)
     (word)
     (quoted_string
@@ -384,4 +384,25 @@ Macros (Format Specifiers)
         (macro_expansion
           (identifier))))))
 
+===============================================================================
+Macros (Python Provide and Obsoletes)
+===============================================================================
+
+%{?python_provide:%python_provide python3-package}
+Obsoletes: python3-oldpackage < 0:1.1
+
 -------------------------------------------------------------------------------
+
+(spec
+  (macro_expansion
+    (conditional_expansion
+      (identifier)
+      (macro_expansion_call
+        (identifier)
+        (word))))
+  (preamble
+    (tags
+      (dependency_tag)
+      (comparison_operator
+        (word)
+        (version)))))

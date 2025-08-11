@@ -40,7 +40,7 @@ Prep Section (%autosetup)
   (prep_scriptlet
     (section_name)
     (shell_block
-      (macro_simple_expansion_parametric
+      (macro_expansion_call
         (identifier)))))
 
 ===============================================================================
@@ -57,9 +57,9 @@ Build section (%build)
   (build_scriptlet
     (section_name)
     (shell_block
-      (macro_simple_expansion_parametric
+      (macro_expansion_call
         (identifier))
-      (macro_simple_expansion_parametric
+      (macro_expansion_call
         (identifier)))))
 
 ===============================================================================

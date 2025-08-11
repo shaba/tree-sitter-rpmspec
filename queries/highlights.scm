@@ -1,11 +1,11 @@
 ; Specific parametric macro expansion rules (must come first)
-(macro_simple_expansion_parametric
-  (builtin) @function.call)
+(macro_expansion_call
+  (builtin) @function.macro)
 
-(macro_simple_expansion_parametric
-  (identifier) @function.call)
+(macro_expansion_call
+  (identifier) @function.macro)
 
-(macro_simple_expansion_parametric
+(macro_expansion_call
   option: (macro_option) @variable.parameter
   argument: [
     (word) @variable.parameter

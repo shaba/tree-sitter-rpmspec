@@ -312,7 +312,7 @@ Parametric Macro (basename with argument)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (builtin)
     argument: (word)))
 
@@ -325,7 +325,7 @@ Parametric Macro (dirname with multiple arguments)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (builtin)
     argument: (word)
     argument: (word)))
@@ -339,7 +339,7 @@ Parametric Macro (builtin with short option)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (builtin)
     option: (macro_option)
     argument: (word)))
@@ -353,7 +353,7 @@ Parametric Macro (builtin with option and value)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (builtin)
     option: (macro_option)
     argument: (word)
@@ -396,7 +396,7 @@ Parametric Macro (with macro expansion as argument)
 -------------------------------------------------------------------------------
 
 (spec
-  (macro_simple_expansion_parametric
+  (macro_expansion_call
     (builtin)
     argument: (macro_expansion
       (identifier))

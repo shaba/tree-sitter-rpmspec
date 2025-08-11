@@ -340,25 +340,25 @@ Conditionals (Nested %if with %elif and %else)
     consequence: (ifarch_statement
       condition: (arch
         (identifier))
-      consequence: (macro_simple_expansion_parametric
+      consequence: (macro_expansion_call
         (identifier)
         argument: (word))
-      consequence: (macro_simple_expansion_parametric
+      consequence: (macro_expansion_call
         (identifier)
         argument: (word))
       alternative: (else_clause
-        body: (macro_simple_expansion_parametric
+        body: (macro_expansion_call
           (identifier)
           argument: (word))
-        body: (macro_simple_expansion_parametric
+        body: (macro_expansion_call
           (identifier)
           argument: (word)))
       (comment))
     alternative: (else_clause
-      body: (macro_simple_expansion_parametric
+      body: (macro_expansion_call
         (identifier)
         argument: (word))
-      body: (macro_simple_expansion_parametric
+      body: (macro_expansion_call
         (identifier)
         argument: (word)))))
 
