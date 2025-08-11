@@ -241,16 +241,22 @@ Macros (Arguments with escaping)
 
 ===============================================================================
 Macros (Nested macro arguments)
-:skip
 ===============================================================================
 
 %{expand: %{configure %{configure_args}}}
 
 -------------------------------------------------------------------------------
 
+(spec
+  (macro_expansion
+    (builtin)
+    (macro_expansion
+      (identifier)
+      (macro_expansion
+        (identifier)))))
+
 ===============================================================================
 Macros (Function-style Built-in with Colon)
-:skip
 ===============================================================================
 
 %{basename:/path/to/file.txt}
@@ -260,12 +266,10 @@ Macros (Function-style Built-in with Colon)
 (spec
   (macro_expansion
     (builtin)
-    (string
-      (string_content))))
+    (word)))
 
 ===============================================================================
 Macros (Environment Variable Expansion)
-:skip
 ===============================================================================
 
 %{getenv:HOME}
@@ -275,11 +279,10 @@ Macros (Environment Variable Expansion)
 (spec
   (macro_expansion
     (builtin)
-    (identifier)))
+    (word)))
 
 ===============================================================================
 Macros (String Transformation Functions)
-:skip
 ===============================================================================
 
 %{upper:hello world}
@@ -291,20 +294,20 @@ Macros (String Transformation Functions)
 (spec
   (macro_expansion
     (builtin)
-    (string
-      (string_content)))
+    (word)
+    (word))
   (macro_expansion
     (builtin)
-    (string
-      (string_content)))
+    (word)
+    (word))
   (macro_expansion
     (builtin)
-    (string
-      (string_content))))
+    (concatenation
+      (word)
+      (word))))
 
 ===============================================================================
 Macros (Path Operations)
-:skip
 ===============================================================================
 
 %{dirname:/usr/local/bin/program}
@@ -315,16 +318,13 @@ Macros (Path Operations)
 (spec
   (macro_expansion
     (builtin)
-    (string
-      (string_content)))
+    (word))
   (macro_expansion
     (builtin)
-    (string
-      (string_content))))
+    (word)))
 
 ===============================================================================
 Macros (Nested Function Calls)
-:skip
 ===============================================================================
 
 %{upper:%{basename:/path/to/FILE.txt}}
@@ -336,8 +336,7 @@ Macros (Nested Function Calls)
     (builtin)
     (macro_expansion
       (builtin)
-      (string
-        (string_content)))))
+      (word))))
 
 ===============================================================================
 Macros (Complex Lua with Variables)
