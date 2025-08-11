@@ -360,31 +360,6 @@ print("Package: " .. name)
       (text_content))))
 
 ===============================================================================
-Macros (Format Specifiers)
-:skip
-===============================================================================
-
-%{name:-%{version}}
-%{?dist:+%{dist}}
-
--------------------------------------------------------------------------------
-
-(spec
-  (macro_expansion
-    (identifier)
-    (string
-      (string_content)
-      (macro_expansion
-        (identifier))))
-  (macro_expansion
-    (conditional_expansion
-      (identifier)
-      (string
-        (string_content)
-        (macro_expansion
-          (identifier))))))
-
-===============================================================================
 Macros (Python Provide and Obsoletes)
 ===============================================================================
 
