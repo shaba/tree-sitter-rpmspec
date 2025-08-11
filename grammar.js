@@ -500,7 +500,9 @@ module.exports = grammar({
                     alias($.macro_define, $.builtin),
                     token.immediate(BLANK),
                     field('name', alias($.macro_name, $.identifier)),
-                    optional(seq('(', optional($.macro_options), ')')),
+                    optional(
+                        seq('(', optional($.parametric_macro_options), ')')
+                    ),
                     token.immediate(BLANK),
                     field('value', $._body)
                 )
@@ -508,9 +510,25 @@ module.exports = grammar({
 
         macro_options: (_) => /[-:a-zA-Z]/,
 
+        // Parametric macro options: defines supported short options for the macro
+        // Format: (xyz) where x, y, z are single-letter options that can be passed
+        // Example: %define myhelper(x) enables %myhelper -x arg
+        // Special format ('-') disables default getopt processing
+        parametric_macro_options: ($) =>
+            choice(
+                '-', // Disable default getopt processing
+                repeat1(
+                    choice(
+                        /[a-zA-Z]/, // Single letter options (a-z, A-Z)
+                        ':' // Option parameter separator
+                    )
+                )
+            ),
+
         _body: ($) =>
             repeat1(
                 choice(
+                    $.macro_expansion_call,
                     $.macro_simple_expansion,
                     $.macro_expansion,
                     $.macro_shell_expansion,

@@ -1072,6 +1072,10 @@
             "named": true
           },
           {
+            "type": "macro_expansion_call",
+            "named": true
+          },
+          {
             "type": "macro_shell_expansion",
             "named": true
           },
@@ -1103,7 +1107,7 @@
           "named": true
         },
         {
-          "type": "macro_options",
+          "type": "parametric_macro_options",
           "named": true
         }
       ]
@@ -1403,6 +1407,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "parametric_macro_options",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "parenthesized_expression",
@@ -2496,10 +2505,6 @@
   {
     "type": "lua",
     "named": false
-  },
-  {
-    "type": "macro_options",
-    "named": true
   },
   {
     "type": "macrobody",
