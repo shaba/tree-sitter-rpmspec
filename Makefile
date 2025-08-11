@@ -12,7 +12,7 @@ build:
 test: default
 	$(TS) test
 
-fast-test:
+test-fast:
 	$(TS) test
 
 .PHONY: default configure build test

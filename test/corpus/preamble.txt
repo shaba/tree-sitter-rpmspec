@@ -1,5 +1,5 @@
 ===============================================================================
-Preamble Section (Name/Word)
+Preamble (Name tag with simple string value)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -13,7 +13,7 @@ Name:           tree-sitter-rpmspec
       (word))))
 
 ===============================================================================
-Preamble Section (Name/Variable)
+Preamble (Name tag with macro expansion)
 ===============================================================================
 
 Name:           %complex_name
@@ -28,7 +28,7 @@ Name:           %complex_name
         (identifier)))))
 
 ===============================================================================
-Preamble Section (Version/Complex)
+Preamble (Version tag with complex version string)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -47,7 +47,7 @@ Version:        1.1~rc1
       (version))))
 
 ===============================================================================
-Preamble Section (Release/Simple Expansion)
+Preamble (Release tag with simple macro expansion)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -67,7 +67,7 @@ Release:        %autorelease
         (identifier)))))
 
 ===============================================================================
-Preamble Section (Release/Expansion)
+Preamble (Release tag with conditional macro expansion)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -90,7 +90,7 @@ Release:        1%{?dist}
             (identifier)))))))
 
 ===============================================================================
-Preamble Section (Summary/String)
+Preamble (Summary tag with multi-word string)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -114,7 +114,7 @@ Summary:        A parser for RPM Spec
         (word)))))
 
 ===============================================================================
-Preamble Section (Summary/String/Expansion)
+Preamble (Summary tag with string and macro expansion)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -141,7 +141,7 @@ Summary:        A parser for RPM Spec version %{version}
           (identifier))))))
 
 ===============================================================================
-Preamble Section (License/String)
+Preamble (License tag with simple string)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -160,7 +160,7 @@ License:        MIT
       (word))))
 
 ===============================================================================
-Preamble Section (URL/String)
+Preamble (URL tag with web address)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -179,7 +179,7 @@ URL:            https://gitlab.com/cryptomilk/tree-sitter-rpmspec
       (word))))
 
 ===============================================================================
-Preamble Section (Source/String)
+Preamble (Source tag with macro expansions)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -204,7 +204,7 @@ Source:         %{name}-%{version}.tar.gz
         (word)))))
 
 ===============================================================================
-Preamble Section (Source0/String)
+Preamble (Source0 tag with macro expansions)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -229,7 +229,7 @@ Source0:        %{name}-%{version}.tar.gz
         (word)))))
 
 ===============================================================================
-Preamble Section (Patch0/String)
+Preamble (Patch0 tag with filename)
 ===============================================================================
 
 Name:           tree-sitter-rpmspec
@@ -248,7 +248,7 @@ Patch0:         fix-xyz.patch
       (word))))
 
 ===============================================================================
-TODO Preamble Section (Virtual capabilities with complex naming)
+TODO Preamble (Virtual capabilities with complex naming)
 :skip
 ===============================================================================
 
@@ -259,7 +259,7 @@ Requires:       capability(feature.subfeature)
 -------------------------------------------------------------------------------
 
 ===============================================================================
-Preamble Section (Complex macro dependencies with epochs)
+TODO Preamble (Complex macro dependencies with epochs)
 :skip
 ===============================================================================
 
