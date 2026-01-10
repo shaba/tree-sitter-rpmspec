@@ -864,6 +864,7 @@ module.exports = grammar({
         // Examples:
         //   Name: tree-sitter-rpmspec
         //   Version: 1.0.0
+        //   BuildRequires(pre): rpm-macros-cmake
         //   BuildRequires: cmake >= 3.10
         //   Requires(post): systemd
         ///////////////////////////////////////////////////////////////////////
@@ -966,6 +967,9 @@ module.exports = grammar({
             choice(
                 // Runtime dependencies (with optional qualifier)
                 seq('Requires', optional(seq('(', $.qualifier, ')'))),
+
+                // Build-time dependencies (with optional qualifier)
+                seq('BuildRequires', optional(seq('(', $.qualifier, ')'))),
 
                 // Build-time dependencies and constraints
                 'BuildRequires', // Packages needed to build this package

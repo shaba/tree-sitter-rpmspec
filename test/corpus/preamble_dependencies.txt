@@ -38,6 +38,26 @@ Requires(pre):  tree-sitter-cli
       (word))))
 
 ===============================================================================
+Preamble Dependencies (BuildRequires with qualifier and package name)
+===============================================================================
+
+Name:           tree-sitter-rpmspec
+BuildRequires(pre):  tree-sitter-cli
+
+-------------------------------------------------------------------------------
+
+(spec
+  (preamble
+    (tags
+      (tag)
+      (word)))
+  (preamble
+    (tags
+      (dependency_tag
+        (qualifier))
+      (word))))
+
+===============================================================================
 Preamble Dependencies (Requires with multiple packages)
 ===============================================================================
 

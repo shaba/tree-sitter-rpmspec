@@ -9,10 +9,12 @@ License:        CC-0
 URL:            https://example.org
 Source0:        https://example.org/%{name}-%{version}.tar.gz
 
+BuildRequires(pre): rpm-macros-cmake
 BuildRequires:  make
 %ifarch x86_64
 Requires:       bash
 %endif
+Requires(post): systemd
 
 %description
 An example spec file
