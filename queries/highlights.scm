@@ -24,12 +24,18 @@
   argument: (_) @variable.parameter)
 
 (macro_expansion
-  (identifier) @function.call
+  (identifier) @variable
   argument: [
     (word) @variable.parameter
     (concatenation
       (word) @variable.parameter)
   ])
+
+; Macro expansion without arguments
+(macro_expansion
+  (builtin) @variable.builtin)
+(macro_expansion
+  (identifier) @variable)
 
 ; Macro definition and undefinition
 (macro_definition
@@ -136,13 +142,16 @@
   "%artifact"
   "%attr"
   "%config"
+  "%defattr"
   "%dir"
   "%doc"
   "%docdir"
+  "%exclude"
   "%ghost"
   "%license"
   "%missingok"
   "%readme"
+  "%verify"
 ] @keyword.type
 
 [

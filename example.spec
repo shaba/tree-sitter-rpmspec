@@ -41,8 +41,11 @@ An example spec file
 %files
 %license LICENSE
 %doc README.md
-%{_bindir}/example
+%defattr(0644,root,root,0755)
+%{_bindir}/*
+%exclude %{_bindir}/example-test
 %config(missingok,noreplace) %verify(not link size mtime md5) %_sysconfdir/%name/%name.conf
+%config %_sysconfdir/sysconfig/%name
 %ghost %verify(user group mode) %attr(644,root,root) %_logdir/%name.log
 
 %changelog

@@ -164,6 +164,21 @@ Macros (Conditional macro definition #2)
   (comment))
 
 ===============================================================================
+Macros (Conditional macro with tag value)
+===============================================================================
+
+%{?enable_afxdp:BuildRequires: libbpf-devel libxdp-devel}
+
+-------------------------------------------------------------------------------
+
+(spec
+  (macro_expansion
+    (conditional_expansion
+      (identifier)
+      (macro_text
+        (macro_text_content)))))
+
+===============================================================================
 Macros (Complex arguments with quotes)
 ===============================================================================
 

@@ -481,11 +481,11 @@
             "named": true
           },
           {
-            "type": "macro_undefinition",
+            "type": "macro_text",
             "named": true
           },
           {
-            "type": "text",
+            "type": "macro_undefinition",
             "named": true
           }
         ]
@@ -520,6 +520,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "config",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "defattr",
@@ -597,6 +602,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "docdir",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "elif_clause",
@@ -768,6 +778,10 @@
       "required": false,
       "types": [
         {
+          "type": "config",
+          "named": true
+        },
+        {
           "type": "verify",
           "named": true
         }
@@ -819,6 +833,10 @@
         },
         {
           "type": "defattr",
+          "named": true
+        },
+        {
+          "type": "docdir",
           "named": true
         },
         {
@@ -1315,6 +1333,29 @@
     "type": "macro_source",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "macro_text",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "macro_expansion",
+          "named": true
+        },
+        {
+          "type": "macro_simple_expansion",
+          "named": true
+        },
+        {
+          "type": "macro_text_content",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "macro_undefinition",
@@ -2011,6 +2052,10 @@
     "named": false
   },
   {
+    "type": "%exclude",
+    "named": false
+  },
+  {
     "type": "%filetriggerin",
     "named": false
   },
@@ -2553,6 +2598,10 @@
     "named": false
   },
   {
+    "type": "macro_text_content",
+    "named": true
+  },
+  {
     "type": "macrobody",
     "named": false
   },
@@ -2565,6 +2614,10 @@
     "named": false
   },
   {
+    "type": "missingok",
+    "named": false
+  },
+  {
     "type": "mode",
     "named": false
   },
@@ -2574,6 +2627,10 @@
   },
   {
     "type": "n",
+    "named": false
+  },
+  {
+    "type": "noreplace",
     "named": false
   },
   {

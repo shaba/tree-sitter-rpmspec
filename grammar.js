@@ -205,14 +205,8 @@ module.exports = grammar({
         // Macro names: alphanumeric identifiers starting with letter or underscore
         macro_name: (_) => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-        //// Macro Escaping: %%{name}
-        // TODO FIXME Not so important
-        //
-        // macro_escaped: ($) =>
-        //     prec(10, choice(
-        //         seq('%%{', alias($.macro_name, $.identifier), '}'), // %%{name}
-        //         seq('%%', alias($.macro_name, $.identifier)) // %%name
-        //     )),
+        //// Macro Escaping: %%{name}, %%name
+        // TODO: add support for escaped macros if needed
 
         //// Simple Macro Expansion: %name
         //
@@ -480,7 +474,7 @@ module.exports = grammar({
                                         $.macro_expansion_call
                                     ),
                                     $.macro_expansion,
-                                    $.text
+                                    $.macro_text
                                 )
                             )
                         )
@@ -1303,11 +1297,15 @@ module.exports = grammar({
                         choice(
                             $._compound_statements, // Conditional file inclusion
                             $.defattr, // Default file attributes
+                            $.docdir, // %docdir directive
                             $.file // Individual file entries
                         )
                     )
                 )
             ),
+
+        // %docdir directive: allowed standalone in %files
+        docdir: ($) => seq('%docdir', token.immediate(NEWLINE)),
 
         // Default file attributes: sets default permissions for all files
         // Format: %defattr(mode, user, group, dirmode)
@@ -1323,6 +1321,8 @@ module.exports = grammar({
                 /[a-zA-Z]+/, // User name
                 ',',
                 /[a-zA-Z]+/, // Group name
+                ',',
+                choice('-', /[0-9]+/), // Directory mode (octal) or '-' for default
                 ')',
                 token.immediate(NEWLINE)
             ),
@@ -1333,10 +1333,11 @@ module.exports = grammar({
             seq(
                 choice(
                     '%artifact', // Build artifact (build system metadata)
-                    '%config', // Configuration file (preserved on upgrade)
+                    $.config, // Configuration file (preserved on upgrade)
                     '%dir', // Directory (created if missing)
                     '%doc', // Documentation file
                     '%docdir', // Documentation directory
+                    '%exclude', // Exclude file from package
                     '%ghost', // Ghost file (not in package, but owned)
                     '%license', // License file
                     '%missingok', // OK if file is missing at install
@@ -1348,10 +1349,11 @@ module.exports = grammar({
 
         // File entry: individual file with optional attributes and qualifiers
         // Can specify custom permissions, file type, and path
+        // %attr can appear at most once per line; qualifiers can repeat.
         file: ($) =>
             seq(
-                optional($.attr), // Custom file attributes
-                optional($.file_qualifier), // File type qualifier
+                repeat($.file_qualifier),
+                optional(seq($.attr, repeat($.file_qualifier))),
                 $.string, // File path (can contain macros)
                 token.immediate(NEWLINE) // Must end with newline
             ),
@@ -1359,6 +1361,25 @@ module.exports = grammar({
         // File attributes: custom permissions for individual files
         // Format: %attr(mode, user, group) filepath
         // Use '-' to inherit from %defattr or filesystem defaults
+        _paren_separator: ($) => choice(',', token.immediate(BLANK)),
+        _verify_attribute: ($) =>
+            choice(
+                'filedigest', // File checksum verification
+                'group', // Group ownership
+                'md5', // MD5 checksum (deprecated)
+                'mode', // File permissions
+                'mtime', // Modification time
+                'not', // Negation modifier
+                'owner', // User ownership (deprecated)
+                'user', // User ownership
+                'size', // File size
+                'link' // Symbolic link target
+            ),
+        _config_option: ($) =>
+            choice(
+                'missingok', // File need not exist
+                'noreplace' // No replacement
+            ),
         attr: ($) =>
             seq(
                 '%attr',
@@ -1380,21 +1401,31 @@ module.exports = grammar({
             seq(
                 '%verify',
                 token.immediate('('),
-                repeat(
-                    choice(
-                        'filedigest', // File checksum verification
-                        'group', // Group ownership
-                        'md5', // MD5 checksum (deprecated)
-                        'mode', // File permissions
-                        'mtime', // Modification time
-                        'not', // Negation modifier
-                        'owner', // User ownership (deprecated)
-                        'user', // User ownership
-                        'size', // File size
-                        'link' // Symbolic link target
+                optional(
+                    seq(
+                        $._verify_attribute,
+                        repeat(seq($._paren_separator, $._verify_attribute))
                     )
                 ),
                 token.immediate(')') // Closing parenthesis
+            ),
+        config: ($) =>
+            seq(
+                '%config',
+                optional(
+                    seq(
+                        token.immediate('('),
+                        optional(
+                            seq(
+                                $._config_option,
+                                repeat(
+                                    seq($._paren_separator, $._config_option)
+                                )
+                            )
+                        ),
+                        token.immediate(')') // Closing parenthesis
+                    )
+                )
             ),
 
         ///////////////////////////////////////////////////////////////////////
@@ -1645,6 +1676,25 @@ module.exports = grammar({
         // Supports backslash escaping and line continuations
         // Excludes % " \ characters that have special meaning
         text_content: (_) => token(prec(-1, /([^"%\\\r\n]|\\(.|\r?\n))+/)),
+
+        // Macro text: same as text but stops before "}" to allow %{?cond:...}
+        macro_text: ($) =>
+            prec(
+                -1,
+                repeat1(
+                    seq(
+                        choice(
+                            seq(optional('%'), $.macro_text_content),
+                            $.macro_simple_expansion,
+                            $.macro_expansion
+                        )
+                    )
+                )
+            ),
+
+        // Macro text content: excludes "}" to avoid consuming macro end
+        macro_text_content: (_) =>
+            token(prec(-1, /([^"%}\\\r\n]|\\(.|\r?\n))+/)),
 
         // String values: sequences of text and macro expansions
         // Automatically concatenates adjacent elements
