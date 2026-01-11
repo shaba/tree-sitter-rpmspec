@@ -974,7 +974,7 @@ module.exports = grammar({
                 // Build-time dependencies and constraints
                 'BuildRequires', // Packages needed to build this package
                 'BuildConflicts', // Packages that conflict during build
-                'BuildPrereq', // Build prerequisites (deprecated)
+                'BuildPreReq', // Build prerequisites (deprecated)
 
                 // Architecture specifications
                 'BuildArch', // Target architecture for build
@@ -1384,15 +1384,14 @@ module.exports = grammar({
                     choice(
                         'filedigest', // File checksum verification
                         'group', // Group ownership
-                        'maj', // Major device number
                         'md5', // MD5 checksum (deprecated)
                         'mode', // File permissions
-                        'min', // Minor device number
                         'mtime', // Modification time
                         'not', // Negation modifier
-                        'owner', // User ownership
+                        'owner', // User ownership (deprecated)
+                        'user', // User ownership
                         'size', // File size
-                        'symlink' // Symbolic link target
+                        'link' // Symbolic link target
                     )
                 ),
                 token.immediate(')') // Closing parenthesis

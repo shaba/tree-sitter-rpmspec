@@ -2223,7 +2223,7 @@
     "named": false
   },
   {
-    "type": "BuildPrereq",
+    "type": "BuildPreReq",
     "named": false
   },
   {
@@ -2537,6 +2537,10 @@
     "extra": true
   },
   {
+    "type": "link",
+    "named": false
+  },
+  {
     "type": "load",
     "named": false
   },
@@ -2553,19 +2557,11 @@
     "named": false
   },
   {
-    "type": "maj",
-    "named": false
-  },
-  {
     "type": "md5",
     "named": false
   },
   {
     "type": "meta",
-    "named": false
-  },
-  {
-    "type": "min",
     "named": false
   },
   {
@@ -2681,10 +2677,6 @@
     "named": false
   },
   {
-    "type": "symlink",
-    "named": false
-  },
-  {
     "type": "text_content",
     "named": true
   },
@@ -2710,6 +2702,10 @@
   },
   {
     "type": "url2path",
+    "named": false
+  },
+  {
+    "type": "user",
     "named": false
   },
   {

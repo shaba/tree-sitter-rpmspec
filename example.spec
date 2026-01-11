@@ -10,6 +10,7 @@ URL:            https://example.org
 Source0:        https://example.org/%{name}-%{version}.tar.gz
 
 BuildRequires(pre): rpm-macros-cmake
+BuildPreReq:    rpm-macros-systemd
 BuildRequires:  make
 %ifarch x86_64
 Requires:       bash
@@ -37,12 +38,12 @@ An example spec file
 %check
 %make_build test
 
-
 %files
 %license LICENSE
 %doc README.md
 %{_bindir}/example
-
+%config(missingok,noreplace) %verify(not link size mtime md5) %_sysconfdir/%name/%name.conf
+%ghost %verify(user group mode) %attr(644,root,root) %_logdir/%name.log
 
 %changelog
 %autochangelog

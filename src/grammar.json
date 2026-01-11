@@ -2858,7 +2858,7 @@
         },
         {
           "type": "STRING",
-          "value": "BuildPrereq"
+          "value": "BuildPreReq"
         },
         {
           "type": "STRING",
@@ -4005,19 +4005,11 @@
               },
               {
                 "type": "STRING",
-                "value": "maj"
-              },
-              {
-                "type": "STRING",
                 "value": "md5"
               },
               {
                 "type": "STRING",
                 "value": "mode"
-              },
-              {
-                "type": "STRING",
-                "value": "min"
               },
               {
                 "type": "STRING",
@@ -4033,11 +4025,15 @@
               },
               {
                 "type": "STRING",
+                "value": "user"
+              },
+              {
+                "type": "STRING",
                 "value": "size"
               },
               {
                 "type": "STRING",
-                "value": "symlink"
+                "value": "link"
               }
             ]
           }
