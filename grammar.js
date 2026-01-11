@@ -206,7 +206,14 @@ module.exports = grammar({
         macro_name: (_) => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
         //// Macro Escaping: %%{name}, %%name
-        // TODO: add support for escaped macros if needed
+        macro_escaped: ($) =>
+            prec(
+                10,
+                choice(
+                    seq('%%{', alias($.macro_name, $.identifier), '}'),
+                    seq('%%', alias($.macro_name, $.identifier))
+                )
+            ),
 
         //// Simple Macro Expansion: %name
         //
@@ -1665,6 +1672,7 @@ module.exports = grammar({
                     seq(
                         choice(
                             seq(optional('%'), $.text_content), // Raw text (% is literal)
+                            $.macro_escaped,
                             $.macro_simple_expansion, // %macro
                             $.macro_expansion // %{macro}
                         )
@@ -1685,6 +1693,7 @@ module.exports = grammar({
                     seq(
                         choice(
                             seq(optional('%'), $.macro_text_content),
+                            $.macro_escaped,
                             $.macro_simple_expansion,
                             $.macro_expansion
                         )
@@ -1704,6 +1713,7 @@ module.exports = grammar({
                 repeat1(
                     choice(
                         seq(optional('%'), $.string_content), // Raw string content
+                        $.macro_escaped,
                         $.macro_simple_expansion, // %macro expansions
                         $.macro_expansion // %{macro} expansions
                     )
