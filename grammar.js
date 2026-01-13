@@ -805,7 +805,14 @@ module.exports = grammar({
             ),
 
         // %ifarch
-        arch: ($) => repeat1(choice($.macro_expansion, $.identifier)),
+        arch: ($) =>
+            repeat1(
+                choice(
+                    $.macro_simple_expansion,
+                    $.macro_expansion,
+                    $.identifier
+                )
+            ),
 
         ifarch_statement: ($) =>
             seq(
@@ -828,7 +835,14 @@ module.exports = grammar({
             ),
 
         // %ifos
-        os: ($) => repeat1(choice($.macro_expansion, $.identifier)),
+        os: ($) =>
+            repeat1(
+                choice(
+                    $.macro_simple_expansion,
+                    $.macro_expansion,
+                    $.identifier
+                )
+            ),
 
         ifos_statement: ($) =>
             seq(
@@ -1201,21 +1215,39 @@ module.exports = grammar({
         // Contains shell commands for system integration
         runtime_scriptlet: ($) =>
             prec.right(
-                seq(
-                    choice(
-                        '%pre', // Before installation
-                        '%post', // After installation
-                        '%preun', // Before removal
-                        '%postun', // After removal
-                        '%pretrans', // Before transaction
-                        '%posttrans', // After transaction
-                        '%preuntrans', // Before removal transaction
-                        '%postuntrans', // After removal transaction
-                        '%verify' // During verification
+                choice(
+                    seq(
+                        choice(
+                            '%pre', // Before installation
+                            '%post', // After installation
+                            '%preun', // Before removal
+                            '%postun', // After removal
+                            '%pretrans', // Before transaction
+                            '%posttrans', // After transaction
+                            '%preuntrans', // Before removal transaction
+                            '%postuntrans', // After removal transaction
+                            '%verify' // During verification
+                        ),
+                        token.immediate(BLANK),
+                        optional(seq(optional('-n'), $._literal)), // Optional subpackage name
+                        token.immediate(NEWLINE),
+                        optional($.shell_block) // Shell commands to execute
                     ),
-                    optional(seq(optional('-n'), $._literal)), // Optional subpackage name
-                    token.immediate(NEWLINE),
-                    optional($.shell_block) // Shell commands to execute
+                    seq(
+                        choice(
+                            '%pre',
+                            '%post',
+                            '%preun',
+                            '%postun',
+                            '%pretrans',
+                            '%posttrans',
+                            '%preuntrans',
+                            '%postuntrans',
+                            '%verify'
+                        ),
+                        token.immediate(NEWLINE),
+                        optional($.shell_block)
+                    )
                 )
             ),
 
@@ -1223,18 +1255,41 @@ module.exports = grammar({
         // Triggers (%triggerin, %triggerun, ...)
         ///////////////////////////////////////////////////////////////////////
 
+        _trigger_header: ($) =>
+            choice(
+                seq(
+                    optional('-n'),
+                    $._literal,
+                    optional(seq(BLANK, '--', optional(BLANK), $.expression))
+                ),
+                seq('--', optional(BLANK), $.expression)
+            ),
+
         trigger: ($) =>
             prec.right(
-                seq(
-                    choice(
-                        '%triggerprein',
-                        '%triggerin',
-                        '%triggerun',
-                        '%triggerpostun'
+                choice(
+                    seq(
+                        choice(
+                            '%triggerprein',
+                            '%triggerin',
+                            '%triggerun',
+                            '%triggerpostun'
+                        ),
+                        token.immediate(BLANK),
+                        optional($._trigger_header),
+                        token.immediate(NEWLINE),
+                        optional($.shell_block)
                     ),
-                    optional(seq(optional('-n'), $._literal)),
-                    token.immediate(NEWLINE),
-                    optional($.shell_block)
+                    seq(
+                        choice(
+                            '%triggerprein',
+                            '%triggerin',
+                            '%triggerun',
+                            '%triggerpostun'
+                        ),
+                        token.immediate(NEWLINE),
+                        optional($.shell_block)
+                    )
                 )
             ),
 
@@ -1244,18 +1299,33 @@ module.exports = grammar({
 
         file_trigger: ($) =>
             prec.right(
-                seq(
-                    choice(
-                        '%filetriggerin',
-                        '%filetriggerun',
-                        '%filetriggerpostun',
-                        '%transfiletriggerin',
-                        '%transfiletriggerun',
-                        '%transfiletriggerpostun'
+                choice(
+                    seq(
+                        choice(
+                            '%filetriggerin',
+                            '%filetriggerun',
+                            '%filetriggerpostun',
+                            '%transfiletriggerin',
+                            '%transfiletriggerun',
+                            '%transfiletriggerpostun'
+                        ),
+                        token.immediate(BLANK),
+                        optional(seq(optional('-n'), $._literal)),
+                        token.immediate(NEWLINE),
+                        optional($.shell_block)
                     ),
-                    optional(seq(optional('-n'), $._literal)),
-                    token.immediate(NEWLINE),
-                    optional($.shell_block)
+                    seq(
+                        choice(
+                            '%filetriggerin',
+                            '%filetriggerun',
+                            '%filetriggerpostun',
+                            '%transfiletriggerin',
+                            '%transfiletriggerun',
+                            '%transfiletriggerpostun'
+                        ),
+                        token.immediate(NEWLINE),
+                        optional($.shell_block)
+                    )
                 )
             ),
 
@@ -1325,9 +1395,9 @@ module.exports = grammar({
                 '(',
                 choice('-', /[0-9]+/), // File mode (octal) or '-' for default
                 ',',
-                /[a-zA-Z]+/, // User name
+                /[a-zA-Z0-9_][a-zA-Z0-9_.-]*/, // User name
                 ',',
-                /[a-zA-Z]+/, // Group name
+                /[a-zA-Z0-9_][a-zA-Z0-9_.-]*/, // Group name
                 ',',
                 choice('-', /[0-9]+/), // Directory mode (octal) or '-' for default
                 ')',
@@ -1393,9 +1463,9 @@ module.exports = grammar({
                 '(',
                 choice('-', /[0-9]+/), // File mode (octal) or '-'
                 ',',
-                /[a-zA-Z]+/, // User name
+                /[a-zA-Z0-9_][a-zA-Z0-9_.-]*/, // User name
                 ',',
-                /[a-zA-Z]+/, // Group name
+                /[a-zA-Z0-9_][a-zA-Z0-9_.-]*/, // Group name
                 ')',
                 token.immediate(BLANK) // Required whitespace before filename
             ),
@@ -1453,8 +1523,16 @@ module.exports = grammar({
                 '*',
                 $.string_content,
                 NEWLINE,
-                repeat(seq('-', $.string, NEWLINE))
+                repeat(
+                    choice(
+                        seq('-', $.string, NEWLINE),
+                        $.changelog_continuation
+                    )
+                )
             ),
+
+        changelog_continuation: ($) =>
+            seq(token.immediate(/[ \t]+/), $.string, NEWLINE),
 
         ///////////////////////////////////////////////////////////////////////
         // Special Macros (%autosetup, %autopatch, %setup, ...)
@@ -1674,7 +1752,8 @@ module.exports = grammar({
                             seq(optional('%'), $.text_content), // Raw text (% is literal)
                             $.macro_escaped,
                             $.macro_simple_expansion, // %macro
-                            $.macro_expansion // %{macro}
+                            $.macro_expansion, // %{macro}
+                            $.quoted_string // "quoted strings" inside descriptions
                         )
                     )
                 )
@@ -1722,7 +1801,7 @@ module.exports = grammar({
 
         // String content: raw text excluding macro delimiters
         // Does not include quotes, backslashes, or newlines
-        string_content: (_) => token(prec(-1, /([^%\\\r\n])+/)),
+        string_content: (_) => token(prec(-1, /([^%\\\r\n]|\\(.|\r?\n))+/)),
 
         // Quoted strings: explicit string literals with macro expansion
         // Allows macro expansion within quotes: "prefix-%{version}-suffix"
@@ -1732,6 +1811,7 @@ module.exports = grammar({
                 '"', // Opening quote
                 repeat(
                     choice(
+                        $.macro_simple_expansion, // %macro inside quotes
                         $.macro_expansion, // %{macro} inside quotes
                         $.quoted_string_content // Literal text
                     )

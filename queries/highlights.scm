@@ -53,6 +53,10 @@
   "%{" @punctuation.special
   "}" @punctuation.special) @none
 
+; Highlight simple macro names (e.g. %_bindir, %SOURCE4)
+(macro_simple_expansion
+  (identifier) @variable)
+
 ; General identifier and builtin rules (must come after specific rules)
 (special_variable_name) @constant
 (builtin) @variable.builtin
@@ -87,13 +91,13 @@
 (quoted_string) @string
 
 (description
-  (section_name) @type.definition)
+  (section_name) @function.builtin)
 (package
-  (section_name) @type.definition)
+  (section_name) @function.builtin)
 (files
-  (section_name) @type.definition)
+  (section_name) @function.builtin)
 (changelog
-  (section_name) @type.definition)
+  (section_name) @function.builtin)
 
 (prep_scriptlet
   (section_name) @function.builtin)

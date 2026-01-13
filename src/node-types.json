@@ -206,6 +206,10 @@
         {
           "type": "macro_expansion",
           "named": true
+        },
+        {
+          "type": "macro_simple_expansion",
+          "named": true
         }
       ]
     }
@@ -321,6 +325,21 @@
     }
   },
   {
+    "type": "changelog_continuation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "changelog_entry",
     "named": true,
     "fields": {},
@@ -328,6 +347,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "changelog_continuation",
+          "named": true
+        },
         {
           "type": "string",
           "named": true
@@ -1433,6 +1456,10 @@
         {
           "type": "macro_expansion",
           "named": true
+        },
+        {
+          "type": "macro_simple_expansion",
+          "named": true
         }
       ]
     }
@@ -1647,6 +1674,10 @@
       "types": [
         {
           "type": "macro_expansion",
+          "named": true
+        },
+        {
+          "type": "macro_simple_expansion",
           "named": true
         },
         {
@@ -1946,6 +1977,10 @@
           "named": true
         },
         {
+          "type": "quoted_string",
+          "named": true
+        },
+        {
           "type": "text_content",
           "named": true
         }
@@ -1961,11 +1996,7 @@
       "required": false,
       "types": [
         {
-          "type": "_primary_expression",
-          "named": true
-        },
-        {
-          "type": "concatenation",
+          "type": "expression",
           "named": true
         },
         {
