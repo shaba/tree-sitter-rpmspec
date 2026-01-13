@@ -59,8 +59,8 @@ module.exports = grammar({
     conflicts: ($) => [
         [$.expression, $.tags],
         [$.shell_block, $.string],
-        [$.macro_expansion_call],
         [$._macro_expansion_call_nested],
+        [$.macro_expansion_call_inline],
     ],
 
     // Tokens that may appear anywhere in the language and are typically ignored
@@ -315,7 +315,57 @@ module.exports = grammar({
                     seq(
                         optional(field('operator', token.immediate('!'))),
                         $.builtin,
-                        token.immediate(/\s+/),
+                        token.immediate(BLANK),
+                        repeat1(
+                            choice(
+                                field('option', $.macro_option),
+                                field('argument', $._macro_argument)
+                            )
+                        ),
+                        token.immediate(NEWLINE)
+                    ),
+                    // Regular macros with arguments
+                    seq(
+                        optional(field('operator', token.immediate('!'))),
+                        alias($.macro_name, $.identifier),
+                        token.immediate(BLANK),
+                        repeat1(
+                            choice(
+                                field('option', $.macro_option),
+                                field('argument', $._macro_argument)
+                            )
+                        ),
+                        token.immediate(NEWLINE)
+                    ),
+                    // Standalone macro names followed by newline (higher precedence than simple expansion)
+                    prec(
+                        1,
+                        seq(
+                            optional(field('operator', token.immediate('!'))),
+                            alias($.macro_name, $.identifier),
+                            token.immediate(NEWLINE)
+                        )
+                    )
+                )
+            ),
+
+        // Inline macro calls used inside macro bodies; allows builtin args without
+        // consuming the line-ending newline.
+        macro_expansion_call_inline: ($) =>
+            seq(
+                '%',
+                choice(
+                    // Builtin macros without arguments
+                    seq(
+                        optional(field('operator', token.immediate('!'))),
+                        $.builtin,
+                        token.immediate(NEWLINE)
+                    ),
+                    // Builtin macros with arguments - require space after builtin
+                    seq(
+                        optional(field('operator', token.immediate('!'))),
+                        $.builtin,
+                        token.immediate(BLANK),
                         repeat1(
                             choice(
                                 field('option', $.macro_option),
@@ -327,7 +377,7 @@ module.exports = grammar({
                     seq(
                         optional(field('operator', token.immediate('!'))),
                         alias($.macro_name, $.identifier),
-                        token.immediate(/\s+/),
+                        token.immediate(BLANK),
                         repeat1(
                             choice(
                                 field('option', $.macro_option),
@@ -357,7 +407,7 @@ module.exports = grammar({
                     seq(
                         optional(field('operator', token.immediate('!'))),
                         $.builtin,
-                        token.immediate(/\s+/),
+                        token.immediate(BLANK),
                         repeat1(
                             choice(
                                 field('option', $.macro_option),
@@ -369,7 +419,7 @@ module.exports = grammar({
                     seq(
                         optional(field('operator', token.immediate('!'))),
                         alias($.macro_name, $.identifier),
-                        token.immediate(/\s+/),
+                        token.immediate(BLANK),
                         repeat1(
                             choice(
                                 field('option', $.macro_option),
@@ -530,7 +580,10 @@ module.exports = grammar({
         _body: ($) =>
             repeat1(
                 choice(
-                    $.macro_expansion_call,
+                    alias(
+                        $.macro_expansion_call_inline,
+                        $.macro_expansion_call
+                    ),
                     $.macro_simple_expansion,
                     $.macro_expansion,
                     $.macro_shell_expansion,
