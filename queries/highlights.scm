@@ -99,6 +99,17 @@
 (changelog
   (section_name) @function.builtin)
 
+(changelog_version) @constant
+(changelog_cve) @constant
+(changelog_bdu) @constant
+(changelog_mfsa) @constant
+(changelog_ove) @constant
+(changelog_bugid) @constant
+(changelog_email) @string.special
+(changelog_url) @string.special
+(changelog_date) @constant
+(changelog_bullet) @constant
+
 (prep_scriptlet
   (section_name) @function.builtin)
 (generate_buildrequires

@@ -23,10 +23,16 @@ Changelog (without Version)
 (spec
   (changelog
     (section_name)
-    (changelog_entry
-      (string_content)
-      (string
-        (string_content)))))
+      (changelog_entry
+        (changelog_header
+        (changelog_date)
+        (changelog_header_word)
+        (changelog_email))
+      (changelog_line
+        (changelog_bullet)
+        (changelog_text
+          (changelog_word)
+          (changelog_word))))))
 
 ===============================================================================
 Changelog (Version)
@@ -41,10 +47,19 @@ Changelog (Version)
 (spec
   (changelog
     (section_name)
-    (changelog_entry
-      (string_content)
-      (string
-        (string_content)))))
+      (changelog_entry
+        (changelog_header
+        (changelog_date)
+        (changelog_header_word)
+        (changelog_header_word)
+        (changelog_email)
+        (changelog_version))
+      (changelog_line
+        (changelog_bullet)
+        (changelog_text
+          (changelog_word)
+          (changelog_word)
+          (version))))))
 
 ===============================================================================
 Changelog (Multi-line)
@@ -60,12 +75,25 @@ Changelog (Multi-line)
 (spec
   (changelog
     (section_name)
-    (changelog_entry
-      (string_content)
-      (string
-        (string_content))
-      (string
-        (string_content)))))
+      (changelog_entry
+        (changelog_header
+        (changelog_date)
+        (changelog_header_word)
+        (changelog_header_word)
+        (changelog_email)
+        (changelog_version))
+      (changelog_line
+        (changelog_bullet)
+        (changelog_text
+          (changelog_word)
+          (changelog_word)
+          (version)))
+      (changelog_line
+        (changelog_bullet)
+        (changelog_text
+          (changelog_word)
+          (changelog_word)
+          (changelog_word))))))
 
 ===============================================================================
 Changelog (Escaped macro)
@@ -80,9 +108,18 @@ Changelog (Escaped macro)
 (spec
   (changelog
     (section_name)
-    (changelog_entry
-      (string_content)
-      (string
-        (string_content)
-        (macro_escaped
-          (identifier))))))
+      (changelog_entry
+        (changelog_header
+        (changelog_date)
+        (changelog_header_word)
+        (changelog_email)
+        (changelog_version))
+      (changelog_line
+        (changelog_bullet)
+        (changelog_text
+          (changelog_word)
+          (changelog_word)
+          (changelog_word)
+          (changelog_word)
+          (macro_escaped
+            (identifier)))))))

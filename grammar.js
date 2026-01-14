@@ -1564,7 +1564,10 @@ module.exports = grammar({
 
         changelog: ($) =>
             seq(
-                alias(token(seq('%changelog', NEWLINE)), $.section_name),
+                alias(
+                    token(seq('%changelog', /[ \t]*/, NEWLINE)),
+                    $.section_name
+                ),
                 repeat($.changelog_entry)
             ),
 
@@ -1573,19 +1576,98 @@ module.exports = grammar({
 
         changelog_entry: ($) =>
             seq(
-                '*',
-                $.string_content,
-                NEWLINE,
+                $.changelog_header,
+                repeat(choice($.changelog_line, $.changelog_continuation))
+            ),
+
+        changelog_header: ($) =>
+            seq(
+                $.changelog_date,
                 repeat(
                     choice(
-                        seq('-', $.string, NEWLINE),
-                        $.changelog_continuation
+                        $.changelog_header_word,
+                        $.changelog_email,
+                        $.changelog_version
+                    )
+                ),
+                NEWLINE
+            ),
+
+        changelog_line: ($) =>
+            seq($.changelog_bullet, $.changelog_text, NEWLINE),
+
+        changelog_continuation: ($) =>
+            seq(
+                token.immediate(/[ \t]+/),
+                optional($.changelog_bullet),
+                $.changelog_text,
+                NEWLINE
+            ),
+
+        changelog_text: ($) =>
+            repeat1(
+                choice(
+                    $.changelog_date,
+                    $.changelog_version,
+                    $.changelog_cve,
+                    $.changelog_bdu,
+                    $.changelog_mfsa,
+                    $.changelog_ove,
+                    $.changelog_bugid,
+                    $.changelog_email,
+                    $.changelog_url,
+                    $.macro_escaped,
+                    $.macro_simple_expansion,
+                    $.macro_expansion,
+                    $.macro_shell_expansion,
+                    $.quoted_string,
+                    $.version,
+                    $.float,
+                    $.integer,
+                    $.changelog_word
+                )
+            ),
+
+        changelog_date: (_) =>
+            token(
+                prec(
+                    2,
+                    /\*[ \t]+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[ \t]+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[ \t]+[0-9]{1,2}[ \t]+[0-9]{4}/
+                )
+            ),
+
+        changelog_version: (_) =>
+            token(
+                prec(
+                    2,
+                    seq(
+                        optional(/[0-9]+:/),
+                        /[0-9A-Za-z+._~]*[0-9][0-9A-Za-z+._~]*/,
+                        '-',
+                        /[0-9A-Za-z+._~]*[0-9][0-9A-Za-z+._~]*/
                     )
                 )
             ),
 
-        changelog_continuation: ($) =>
-            seq(token.immediate(/[ \t]+/), $.string, NEWLINE),
+        changelog_cve: (_) => token(prec(2, /(?:CVE|CAN)-\d{4}-\d{4,7}[),.]?/)),
+
+        changelog_bdu: (_) => token(prec(2, /BDU:\d{4}-\d{5}/)),
+
+        changelog_mfsa: (_) => token(prec(2, /MFSA-\d{4}-\d{2}/)),
+
+        changelog_ove: (_) => token(prec(2, /OVE-\d{8}-\d{4}/)),
+
+        changelog_bugid: (_) => token(prec(2, /\w*#\d+/)),
+
+        changelog_email: (_) => token(prec(2, /<[A-Za-z0-9._-]+@[^>\s]+>/)),
+
+        changelog_url: (_) => token(prec(2, /(?:ftp|https?):\/\/[^\s]+/)),
+
+        changelog_word: (_) => token(prec(-1, /([^\s"#%{}<>|&\\])+/)),
+
+        changelog_header_word: (_) => token(prec(-1, /[^\s<>()]+/)),
+
+        changelog_bullet: (_) => token(prec(2, /[+-]/)),
 
         ///////////////////////////////////////////////////////////////////////
         // Special Macros (%autosetup, %autopatch, %setup, ...)

@@ -4801,6 +4801,10 @@
                 },
                 {
                   "type": "PATTERN",
+                  "value": "[ \\t]*"
+                },
+                {
+                  "type": "PATTERN",
                   "value": "\\r?\\n"
                 }
               ]
@@ -4822,16 +4826,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
-          "value": "*"
-        },
-        {
           "type": "SYMBOL",
-          "name": "string_content"
-        },
-        {
-          "type": "PATTERN",
-          "value": "\\r?\\n"
+          "name": "changelog_header"
         },
         {
           "type": "REPEAT",
@@ -4839,21 +4835,8 @@
             "type": "CHOICE",
             "members": [
               {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": "-"
-                  },
-                  {
-                    "type": "SYMBOL",
-                    "name": "string"
-                  },
-                  {
-                    "type": "PATTERN",
-                    "value": "\\r?\\n"
-                  }
-                ]
+                "type": "SYMBOL",
+                "name": "changelog_line"
               },
               {
                 "type": "SYMBOL",
@@ -4861,6 +4844,56 @@
               }
             ]
           }
+        }
+      ]
+    },
+    "changelog_header": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "changelog_date"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "changelog_header_word"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "changelog_email"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "changelog_version"
+              }
+            ]
+          }
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\r?\\n"
+        }
+      ]
+    },
+    "changelog_line": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "changelog_bullet"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "changelog_text"
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\r?\\n"
         }
       ]
     },
@@ -4875,14 +4908,263 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "changelog_bullet"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "SYMBOL",
-          "name": "string"
+          "name": "changelog_text"
         },
         {
           "type": "PATTERN",
           "value": "\\r?\\n"
         }
       ]
+    },
+    "changelog_text": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "changelog_date"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_version"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_cve"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_bdu"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_mfsa"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_ove"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_bugid"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_email"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_url"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "macro_escaped"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "macro_simple_expansion"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "macro_expansion"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "macro_shell_expansion"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "quoted_string"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "version"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "float"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "integer"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "changelog_word"
+          }
+        ]
+      }
+    },
+    "changelog_date": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\*[ \\t]+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[ \\t]+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[ \\t]+[0-9]{1,2}[ \\t]+[0-9]{4}"
+        }
+      }
+    },
+    "changelog_version": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "PATTERN",
+                  "value": "[0-9]+:"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            },
+            {
+              "type": "PATTERN",
+              "value": "[0-9A-Za-z+._~]*[0-9][0-9A-Za-z+._~]*"
+            },
+            {
+              "type": "STRING",
+              "value": "-"
+            },
+            {
+              "type": "PATTERN",
+              "value": "[0-9A-Za-z+._~]*[0-9][0-9A-Za-z+._~]*"
+            }
+          ]
+        }
+      }
+    },
+    "changelog_cve": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "(?:CVE|CAN)-\\d{4}-\\d{4,7}[),.]?"
+        }
+      }
+    },
+    "changelog_bdu": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "BDU:\\d{4}-\\d{5}"
+        }
+      }
+    },
+    "changelog_mfsa": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "MFSA-\\d{4}-\\d{2}"
+        }
+      }
+    },
+    "changelog_ove": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "OVE-\\d{8}-\\d{4}"
+        }
+      }
+    },
+    "changelog_bugid": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\w*#\\d+"
+        }
+      }
+    },
+    "changelog_email": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "<[A-Za-z0-9._-]+@[^>\\s]+>"
+        }
+      }
+    },
+    "changelog_url": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "(?:ftp|https?):\\/\\/[^\\s]+"
+        }
+      }
+    },
+    "changelog_word": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "PATTERN",
+          "value": "([^\\s\"#%{}<>|&\\\\])+"
+        }
+      }
+    },
+    "changelog_header_word": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "PATTERN",
+          "value": "[^\\s<>()]+"
+        }
+      }
+    },
+    "changelog_bullet": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "[+-]"
+        }
+      }
     },
     "setup_macro": {
       "type": "SEQ",

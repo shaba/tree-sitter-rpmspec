@@ -329,11 +329,15 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
-          "type": "string",
+          "type": "changelog_bullet",
+          "named": true
+        },
+        {
+          "type": "changelog_text",
           "named": true
         }
       ]
@@ -352,11 +356,140 @@
           "named": true
         },
         {
-          "type": "string",
+          "type": "changelog_header",
           "named": true
         },
         {
-          "type": "string_content",
+          "type": "changelog_line",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "changelog_header",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "changelog_date",
+          "named": true
+        },
+        {
+          "type": "changelog_email",
+          "named": true
+        },
+        {
+          "type": "changelog_header_word",
+          "named": true
+        },
+        {
+          "type": "changelog_version",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "changelog_line",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "changelog_bullet",
+          "named": true
+        },
+        {
+          "type": "changelog_text",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "changelog_text",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "changelog_bdu",
+          "named": true
+        },
+        {
+          "type": "changelog_bugid",
+          "named": true
+        },
+        {
+          "type": "changelog_cve",
+          "named": true
+        },
+        {
+          "type": "changelog_date",
+          "named": true
+        },
+        {
+          "type": "changelog_email",
+          "named": true
+        },
+        {
+          "type": "changelog_mfsa",
+          "named": true
+        },
+        {
+          "type": "changelog_ove",
+          "named": true
+        },
+        {
+          "type": "changelog_url",
+          "named": true
+        },
+        {
+          "type": "changelog_version",
+          "named": true
+        },
+        {
+          "type": "changelog_word",
+          "named": true
+        },
+        {
+          "type": "float",
+          "named": true
+        },
+        {
+          "type": "integer",
+          "named": true
+        },
+        {
+          "type": "macro_escaped",
+          "named": true
+        },
+        {
+          "type": "macro_expansion",
+          "named": true
+        },
+        {
+          "type": "macro_shell_expansion",
+          "named": true
+        },
+        {
+          "type": "macro_simple_expansion",
+          "named": true
+        },
+        {
+          "type": "quoted_string",
+          "named": true
+        },
+        {
+          "type": "version",
           "named": true
         }
       ]
@@ -2250,10 +2383,6 @@
     "named": false
   },
   {
-    "type": "*",
-    "named": false
-  },
-  {
     "type": ",",
     "named": false
   },
@@ -2548,6 +2677,54 @@
   {
     "type": "c",
     "named": false
+  },
+  {
+    "type": "changelog_bdu",
+    "named": true
+  },
+  {
+    "type": "changelog_bugid",
+    "named": true
+  },
+  {
+    "type": "changelog_bullet",
+    "named": true
+  },
+  {
+    "type": "changelog_cve",
+    "named": true
+  },
+  {
+    "type": "changelog_date",
+    "named": true
+  },
+  {
+    "type": "changelog_email",
+    "named": true
+  },
+  {
+    "type": "changelog_header_word",
+    "named": true
+  },
+  {
+    "type": "changelog_mfsa",
+    "named": true
+  },
+  {
+    "type": "changelog_ove",
+    "named": true
+  },
+  {
+    "type": "changelog_url",
+    "named": true
+  },
+  {
+    "type": "changelog_version",
+    "named": true
+  },
+  {
+    "type": "changelog_word",
+    "named": true
   },
   {
     "type": "comment",
