@@ -202,5 +202,17 @@
   "%endif"
 ] @keyword.conditional
 
+(if_statement
+  "%if"
+  condition: (word) @keyword.conditional
+  (#match? @keyword.conditional "^_(disabled|enabled|with|without)$"))
+
+(if_statement
+  "%if"
+  condition: (concatenation
+    (word) @keyword.conditional
+    (word))
+  (#match? @keyword.conditional "^_(disabled|enabled|with|without)$"))
+
 ; Fallback rule for identifiers (commented out due to conflicts with parametric macros)
 ; (identifier) @variable
